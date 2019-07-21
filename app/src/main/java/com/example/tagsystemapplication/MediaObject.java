@@ -1,46 +1,15 @@
 package com.example.tagsystemapplication;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class MediaObject {
-    private int uId;
-    private String title;
+public class MediaObject extends SystemObject{
     private String mediaUrl;
     private String mediaCoverImgUrl;
-    private String[] tags;
 
-    public MediaObject(int uId, String title, String mediaUrl,String coverImageUrl ,String[] tags) {
-        this.uId = uId;
-        this.title = title;
+    public MediaObject(int uId, String title, String mediaUrl,String coverImageUrl ,ArrayList<MyTag> tags) {
+        super(uId, title, tags);
         this.mediaUrl = mediaUrl;
-        this.tags = tags;
         this.mediaCoverImgUrl = coverImageUrl;
-    }
-
-
-    public String[] getTags() {
-        return tags;
-    }
-
-    public void setTags(String[] tags) {
-        this.tags = tags;
-    }
-
-    public int getId() {
-        return uId;
-    }
-
-    public void setId(int uId) {
-        this.uId = uId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String mTitle) {
-        this.title = mTitle;
     }
 
     public String getUrl() {

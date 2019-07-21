@@ -1,6 +1,7 @@
 package com.example.tagsystemapplication;
 
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -13,6 +14,9 @@ import com.ms.square.android.expandabletextview.ExpandableTextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import static com.example.tagsystemapplication.Constants.showOptions;
+
 
 public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -27,6 +31,7 @@ public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnCl
     private View parent;
     private Spinner spinner;
     private ImageButton options;
+    private TextObject object;
 
 
     public TextViewHolder(@NonNull View itemView) {
@@ -41,19 +46,24 @@ public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnCl
     }
 
     void onBind(TextObject textObject) {
+        this.object = textObject;
         parent.setTag(this);
         title.setText(textObject.getTitle());
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, Constants.getSpinnerTags(textObject.getTags())));
+        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, textObject.getTags()));
         content.setText(textObject.getStrContent());
         options.setOnClickListener(this);
 
     }
 
+    private void refreshTagList(){
+        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, object.getTags()));
+    }
+
     @Override
     public void onClick(View view) {
-        PopupMenu popup = new PopupMenu(view.getContext(), view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.my_item_options, popup.getMenu());
-        popup.show();
+        showOptions(view, object);
+        refreshTagList();
     }
+
+
 }

@@ -34,6 +34,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.ms-square:expandableTextView:0.1.4'
+    implementation 'android.arch.navigation:navigation-fragment:1.0.0'
 //    testImplementation 'junit:junit:4.12'
 //    androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
 //    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'

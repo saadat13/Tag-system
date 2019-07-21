@@ -2,6 +2,7 @@ package com.example.tagsystemapplication;
 
 import android.annotation.SuppressLint;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -21,6 +22,7 @@ import androidx.appcompat.widget.MenuPopupWindow;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.withCrossFade;
+import static com.example.tagsystemapplication.Constants.showOptions;
 
 public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -36,6 +38,8 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
     private View parent;
     private Spinner spinner;
     private ImageButton options;
+    private ImageObject object;
+
 
     public ImageViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -49,11 +53,12 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
     }
 
     void onBind(ImageObject mediaObject, RequestManager requestManager) {
+        this.object = mediaObject;
         this.requestManager = requestManager;
         parent.setTag(this);
         title.setText(mediaObject.getTitle());
         options.setOnClickListener(this);
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, Constants.getSpinnerTags(mediaObject.getTags())));
+        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, mediaObject.getTags()));
         loadImage(mediaObject);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,12 +85,16 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
                 .into(image);
     }
 
+    private void refreshTagList(){
+        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, object.getTags()));
+    }
+
     @Override
     public void onClick(View view) {
-        PopupMenu popup = new PopupMenu(view.getContext(), view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.my_item_options, popup.getMenu());
-        popup.show();
+        showOptions(view, object);
+        refreshTagList();
     }
+
+
 
 }

@@ -16,16 +16,16 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 
-public class MySpinnerAdapter extends ArrayAdapter<SpinnerItem> {
+public class MySpinnerAdapter extends ArrayAdapter<MyTag> {
     private Context mContext;
-    private ArrayList<SpinnerItem> listState;
+    private ArrayList<MyTag> listState;
     private MySpinnerAdapter adapter;
     private boolean isFromView = false;
 
-    public MySpinnerAdapter(Context context, int resource, List<SpinnerItem> objects) {
+    public MySpinnerAdapter(Context context, int resource, List<MyTag> objects) {
         super(context, resource, objects);
         this.mContext = context;
-        this.listState = (ArrayList<SpinnerItem>) objects;
+        this.listState = (ArrayList<MyTag>) objects;
         this.adapter = this;
     }
     

@@ -24,9 +24,9 @@ public class MainActivity extends FragmentActivity{
     TabLayout tabLayout;
     SlideAdapter adapter;
 
-    private  ArrayList<TextObject> tobjects = new ArrayList<>();
-    private  ArrayList<MediaObject> mobjects = new ArrayList<>();
-    private  ArrayList<ImageObject> iobjects = new ArrayList<>();
+    public static  ArrayList<TextObject> tobjects = new ArrayList<>();
+    public static  ArrayList<MediaObject> mobjects = new ArrayList<>();
+    public static  ArrayList<ImageObject> iobjects = new ArrayList<>();
 
     TextListSlide textSlide;
     VideoListSlide videoSlide;
@@ -37,17 +37,21 @@ public class MainActivity extends FragmentActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mobjects.add(new MediaObject(1, "title", vlink ,vlink,new String[]{"tag1"}));
-        mobjects.add(new MediaObject(2, "title", vlink ,vlink,new String[]{"tag1"}));
-        mobjects.add(new MediaObject(3, "title", vlink ,vlink,new String[]{"tag1"}));
+        ArrayList<MyTag> sampleTags = new ArrayList<>();
+        sampleTags.add(new MyTag("tag1"));
+        sampleTags.add(new MyTag("tag2"));
 
-        iobjects.add(new ImageObject(1, "image title", link, new String[]{"tag1", "tag2"}));
-        iobjects.add(new ImageObject(2, "image title", link, new String[]{"tag1", "tag2"}));
-        iobjects.add(new ImageObject(3, "image title", link, new String[]{"tag1", "tag2"}));
+        mobjects.add(new MediaObject(1, "title", vlink ,vlink,sampleTags));
+        mobjects.add(new MediaObject(2, "title", vlink ,vlink,sampleTags));
+        mobjects.add(new MediaObject(3, "title", vlink ,vlink,sampleTags));
 
-        tobjects.add(new TextObject(1, "text title", sample, new String[]{"tag1", "tag2"}));
-        tobjects.add(new TextObject(2, "text title", sample, new String[]{"tag1", "tag2"}));
-        tobjects.add(new TextObject(3, "text title", sample, new String[]{"tag1", "tag2"}));
+        iobjects.add(new ImageObject(1, "image title", link, sampleTags));
+        iobjects.add(new ImageObject(2, "image title", link, sampleTags));
+        iobjects.add(new ImageObject(3, "image title", link, sampleTags));
+
+        tobjects.add(new TextObject(1, "text title", sample, sampleTags));
+        tobjects.add(new TextObject(2, "text title", sample, sampleTags));
+        tobjects.add(new TextObject(3, "text title", sample, sampleTags));
 
         viewPager = findViewById(R.id.pager);
         adapter = new SlideAdapter(getSupportFragmentManager());

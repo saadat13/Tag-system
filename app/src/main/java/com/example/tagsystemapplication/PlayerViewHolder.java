@@ -1,6 +1,7 @@
 package com.example.tagsystemapplication;
 
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -12,8 +13,15 @@ import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import static com.example.tagsystemapplication.Constants.showOptions;
+
 
 public class PlayerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -29,6 +37,8 @@ public class PlayerViewHolder extends RecyclerView.ViewHolder implements View.On
     private View parent;
     private Spinner spinner;
     private ImageButton options;
+    private MediaObject object;
+    private MySpinnerAdapter adapter;
 
 
     public PlayerViewHolder(@NonNull View itemView) {
@@ -47,18 +57,27 @@ public class PlayerViewHolder extends RecyclerView.ViewHolder implements View.On
     void onBind(MediaObject mediaObject, RequestManager requestManager) {
         this.requestManager = requestManager;
         parent.setTag(this);
+        this.object = mediaObject;
         title.setText(mediaObject.getTitle());
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, Constants.getSpinnerTags(mediaObject.getTags())));
+        adapter = new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, mediaObject.getTags());
+        spinner.setAdapter(adapter);
         this.requestManager
                 .load(mediaObject.getCoverUrl())
                 .into(mediaCoverImage);
     }
 
+    private void refreshTagList(){
+        adapter = new MySpinnerAdapter(parent.getContext(), R.layout.spinner_item, object.getTags());
+        spinner.setAdapter(adapter);
+    }
+
     @Override
     public void onClick(View view) {
-        PopupMenu popup = new PopupMenu(view.getContext(), view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.my_item_options, popup.getMenu());
-        popup.show();
+        showOptions(view, object);
+        refreshTagList();
     }
+
+
+
+
 }
