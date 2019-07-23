@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.bumptech.glide.RequestManager;
+import com.example.tagsystemapplication.Adapters.VideoViewHolder;
+import com.example.tagsystemapplication.Objects.VideoObject;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -49,8 +51,8 @@ public class ExoPlayerRecyclerView extends RecyclerView {
     private static final String TAG = "ExoPlayerRecyclerView";
     private static final String AppName = "Android ExoPlayer";
     /**
-     * PlayerViewHolder UI component
-     * Watch PlayerViewHolder class
+     * VideoViewHolder UI component
+     * Watch VideoViewHolder class
      */
     private ImageView mediaCoverImage, volumeControl;
     private ProgressBar progressBar;
@@ -62,7 +64,7 @@ public class ExoPlayerRecyclerView extends RecyclerView {
      * variable declaration
      */
     // Media List
-    private ArrayList<MediaObject> mediaObjects;
+    private ArrayList<VideoObject> mediaObjects;
     private int videoSurfaceDefaultHeight = 0;
     private int screenDefaultHeight = 0;
     private Context context;
@@ -310,7 +312,7 @@ public class ExoPlayerRecyclerView extends RecyclerView {
             return;
         }
 
-        PlayerViewHolder holder = (PlayerViewHolder) child.getTag();
+        VideoViewHolder holder = (VideoViewHolder) child.getTag();
         if (holder == null) {
             playPosition = -1;
             return;
@@ -453,7 +455,7 @@ public class ExoPlayerRecyclerView extends RecyclerView {
         }
     }
 
-    public void setMediaObjects(ArrayList<MediaObject> mediaObjects) {
+    public void setMediaObjects(ArrayList<VideoObject> mediaObjects) {
         this.mediaObjects = mediaObjects;
     }
 

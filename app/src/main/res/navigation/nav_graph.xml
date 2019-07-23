@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/nav_graph">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/textFragment">
+    <fragment
+        android:id="@+id/videoFragment"
+        android:name="com.example.tagsystemapplication.Fragments.VideoFragment"
+        android:label="video_item_layout"
+        tools:layout="@layout/video_fragment">
+        <action
+            android:id="@+id/action_videoFragment_to_textFragment"
+            app:destination="@id/textFragment" />
+        <action
+            android:id="@+id/action_videoFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/textFragment"
+        android:name="com.example.tagsystemapplication.Fragments.TextFragment"
+        android:label="text_fragment"
+        tools:layout="@layout/text_fragment">
+        <action
+            android:id="@+id/action_textFragment_to_imageFragment4"
+            app:destination="@id/imageFragment" />
+        <action
+            android:id="@+id/action_textFragment_to_videoFragment2"
+            app:destination="@id/videoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/imageFragment"
+        android:name="com.example.tagsystemapplication.Fragments.ImageFragment"
+        android:label="image_fragment"
+        tools:layout="@layout/image_fragment">
+        <action
+            android:id="@+id/action_imageFragment_to_videoFragment3"
+            app:destination="@id/videoFragment" />
+        <action
+            android:id="@+id/action_imageFragment_to_textFragment2"
+            app:destination="@id/textFragment" />
+    </fragment>
 </navigation>

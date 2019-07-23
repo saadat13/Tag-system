@@ -1,151 +1,166 @@
 package com.example.tagsystemapplication;
 
-import android.graphics.drawable.Drawable;
+import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.request.RequestOptions;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
+import com.example.tagsystemapplication.Objects.ImageObject;
+import com.example.tagsystemapplication.Objects.SystemObject;
+import com.example.tagsystemapplication.Objects.TextObject;
+import com.example.tagsystemapplication.Objects.VideoObject;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.fragment.NavHostFragment;
 
-import static android.widget.LinearLayout.VERTICAL;
+public class MainActivityPrime extends AppCompatActivity implements View.OnClickListener {
 
-/**
- * Created by Morris on 03,June,2019
- */
-public class MainActivityPrime extends AppCompatActivity {
+    String sample = "Once the player has been prepared, playback can be controlled by calling methods on the player. For example setPlayWhenReady starts and pauses playback, the various seekTo methods seek within the media,setRepeatMode controls if and how media is looped, setShuffleModeEnabled controls playlist shuffling, and setPlaybackParameters adjusts playback speed and pitch.\n" +
+            "\n" +
+            "If the player is bound to a PlayerView or PlayerControlView, then user interaction with these components will cause corresponding methods on the player to be invoked.";
 
-    RecyclerView mRecyclerView;
+    String link = "http://icons.iconarchive.com/icons/paomedia/small-n-flat/256/sign-check-icon.png";
+    String vlink = "https://s5.mihanvideo.com/user_contents/videos/icl0tmmwf0ahqzsdz0evt9aociakjfvgswx/37OPwvWlgvDyrE8FhTuo_240p.mp4";
 
-    private ArrayList<TextObject> mediaObjectList = new ArrayList<>();
-    private TextRecyclerAdapter mAdapter;
-    private boolean firstTime = true;
+
+    public static ArrayList<SystemObject> items = new ArrayList<>();
+    public static int currentItemIndex = 0;
+
+    private ImageButton next;
+    private ImageButton back;
+    private ImageButton first;
+    private ImageButton last;
+    private ImageButton ok;
+    private NavHostFragment navHostFragment;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ArrayList<MyTag> sampleTags = new ArrayList<>();
+        sampleTags.add(new MyTag("tag1"));
+        sampleTags.add(new MyTag("tag2"));
+        sampleTags.add(new MyTag("tag2"));
+        sampleTags.add(new MyTag("tag2"));
+        sampleTags.add(new MyTag("tag2"));
+
+        items.add(new TextObject(1, "text title", sample + sample + sample, sampleTags));
+        items.add(new ImageObject(2, "text title", link, sampleTags));
+        items.add(new VideoObject(3, "text title", vlink, vlink, sampleTags));
+
         setContentView(R.layout.activity_main_prime);
-        initView();
-        // Prepare demo content
-//        prepareImageList();
 
-        //set data object
+        navHostFragment = (NavHostFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
 
-//        mRecyclerView = findViewById(R.id.image_rv);
-//        mAdapter = new TextRecyclerAdapter(mediaObjectList, initGlide());
-//
-//        //Set Adapter
-//        mRecyclerView.setAdapter(mAdapter);
 
-//        if (firstTime) {
-//            new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    mRecyclerView.playVideo(false);
-//                }
-//            });
-//            firstTime = false;
-//        }
-    }
 
-    private void initView() {
-        mRecyclerView = findViewById(R.id.image_rv);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
-//        Drawable dividerDrawable = ContextCompat.getDrawable(this, R.drawable.);
-//        mRecyclerView.addItemDecoration(new DividerItemDecoration(dividerDrawable));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-    }
+        next  = findViewById(R.id.next);
+        back  = findViewById(R.id.back);
+        first = findViewById(R.id.first);
+        last  = findViewById(R.id.last);
+        ok    = findViewById(R.id.ok);
 
-    private RequestManager initGlide() {
-        RequestOptions options = new RequestOptions();
-        return Glide.with(this)
-                .setDefaultRequestOptions(options);
+        next.setOnClickListener(this);
+        back.setOnClickListener(this);
+        first.setOnClickListener(this);
+        last.setOnClickListener(this);
+        ok.setOnClickListener(this);
+
+
+
+
+//        items.add(new VideoObject(2, "text title", vlink,vlink, sampleTags));
+//        items.add(new ImageObject(3, "text title", link, sampleTags));
+
+
+
     }
 
     @Override
-    protected void onDestroy() {
-//        if (mRecyclerView != null) {
-//            mRecyclerView.releasePlayer();
-//        }
-        super.onDestroy();
+    public void onBackPressed() {
+        super.onBackPressed();
+        back.performClick();
     }
 
-//    private void prepareImageList() {
-//        String link = "http://icons.iconarchive.com/icons/paomedia/small-n-flat/256/sign-check-icon.png";
-//        TextObject mediaObject = new TextObject();
-//        mediaObject.setId(1);
-//        mediaObject.setTags(new String[]{"tag1", "tag2", "tag3", "tag4"});
-//        mediaObject.setTitle(
-//                "Do you think the concept of marriage will no longer exist in the future?");
-//        mediaObjectList.add(mediaObject);
-//        mediaObjectList.add(mediaObject);
-//        mediaObjectList.add(mediaObject);
-//        mediaObjectList.add(mediaObject);
-//
-//    }
-
-//        private void prepareVideoList() {
-//        String vlink = "https://s5.mihanvideo.com/user_contents/videos/icl0tmmwf0ahqzsdz0evt9aociakjfvgswx/37OPwvWlgvDyrE8FhTuo_240p.mp4";
-//        MediaObject mediaObject = new MediaObject();
-//        mediaObject.setId(1);
-//        mediaObject.setTags(new String[]{"tag1", "tag2", "tag3", "tag4"});
-//        mediaObject.setTitle(
-//                "Do you think the concept of marriage will no longer exist in the future?");
-//        mediaObject.setCoverUrl(
-//                "https://androidwave.com/media/images/exo-player-in-recyclerview-in-android-1.png");
-//        mediaObject.setUrl(vlink);
-//
-////        MediaObject mediaObject2 = new MediaObject();
-////        mediaObject2.setId(2);
-////        mediaObject2.setUserHandle("@hardik.patel");
-////        mediaObject2.setTitle(
-////                "If my future husband doesn't cook food as good as my mother should I scold him?");
-////        mediaObject2.setCoverUrl(
-////                "https://androidwave.com/media/images/exo-player-in-recyclerview-in-android-2.png");
-////        mediaObject2.setUrl("https://androidwave.com/media/androidwave-video-2.mp4");
-////
-////        MediaObject mediaObject3 = new MediaObject();
-////        mediaObject3.setId(3);
-////        mediaObject3.setUserHandle("@arun.gandhi");
-////        mediaObject3.setTitle("Give your opinion about the Ayodhya temple controversy.");
-////        mediaObject3.setCoverUrl(
-////                "https://androidwave.com/media/images/exo-player-in-recyclerview-in-android-3.png");
-////        mediaObject3.setUrl("https://androidwave.com/media/androidwave-video-3.mp4");
-////
-////        MediaObject mediaObject4 = new MediaObject();
-////        mediaObject4.setId(4);
-////        mediaObject4.setUserHandle("@sachin.patel");
-////        mediaObject4.setTitle("When did kama founders find sex offensive to Indian traditions");
-////        mediaObject4.setCoverUrl(
-////                "https://androidwave.com/media/images/exo-player-in-recyclerview-in-android-4.png");
-////        mediaObject4.setUrl("https://androidwave.com/media/androidwave-video-6.mp4");
-////
-////        MediaObject mediaObject5 = new MediaObject();
-////        mediaObject5.setId(5);
-////        mediaObject5.setUserHandle("@monika.sharma");
-////        mediaObject5.setTitle("When did you last cry in front of someone?");
-////        mediaObject5.setCoverUrl(
-////                "https://androidwave.com/media/images/exo-player-in-recyclerview-in-android-5.png");
-////        mediaObject5.setUrl("https://androidwave.com/media/androidwave-video-5.mp4");
-//
-//        mediaObjectList.add(mediaObject);
-////        mediaObjectList.add(mediaObject2);
-////        mediaObjectList.add(mediaObject3);
-////        mediaObjectList.add(mediaObject4);
-////        mediaObjectList.add(mediaObject5);
-////        mediaObjectList.add(mediaObject);
-////        mediaObjectList.add(mediaObject2);
-////        mediaObjectList.add(mediaObject3);
-////        mediaObjectList.add(mediaObject4);
-////        mediaObjectList.add(mediaObject5);
-//    }
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.next:
+                if(currentItemIndex +1 < items.size()){
+                    SystemObject curItem = items.get(++currentItemIndex);
+                    if (curItem instanceof TextObject) {
+                        navHostFragment.getNavController().navigate(R.id.textFragment);
+                    } else if (curItem instanceof ImageObject) {
+                        navHostFragment.getNavController().navigate(R.id.imageFragment);
+                    } else if(curItem instanceof VideoObject) {
+                        navHostFragment.getNavController().navigate(R.id.videoFragment);
+                    }
+//                    Toast.makeText(this, "next pressed", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.back:
+                if(currentItemIndex -1 >= 0){
+                    SystemObject curItem = items.get(--currentItemIndex);
+                    if (curItem instanceof TextObject) {
+                        navHostFragment.getNavController().navigate(R.id.textFragment);
+                    } else if (curItem instanceof ImageObject) {
+                        navHostFragment.getNavController().navigate(R.id.imageFragment);
+                    } else /*if(first instanceof VideoObject)*/ {
+                        navHostFragment.getNavController().navigate(R.id.videoFragment);
+                    }
+//                    Toast.makeText(this, "back pressed", Toast.LENGTH_SHORT).show();
+                }else{
+                    finish();
+                }
+                break;
+            case R.id.first:
+                if(items.size() > 0) {
+                    currentItemIndex = 0;
+                    SystemObject firstItem = items.get(currentItemIndex);
+                    if (firstItem instanceof TextObject) {
+                        navHostFragment.getNavController().navigate(R.id.textFragment);
+                    } else if (firstItem instanceof ImageObject) {
+                        navHostFragment.getNavController().navigate(R.id.imageFragment);
+                    } else /*if(first instanceof VideoObject)*/ {
+                        navHostFragment.getNavController().navigate(R.id.videoFragment);
+                    }
+//                    Toast.makeText(this, "first pressed", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.last:
+                if(items.size() > 0) {
+                    currentItemIndex = items.size() - 1;
+                    SystemObject lastItem = items.get(currentItemIndex);
+                    if (lastItem instanceof TextObject) {
+                        navHostFragment.getNavController().navigate(R.id.textFragment);
+                    } else if (lastItem instanceof ImageObject) {
+                        navHostFragment.getNavController().navigate(R.id.imageFragment);
+                    } else /*if(first instanceof VideoObject)*/ {
+                        navHostFragment.getNavController().navigate(R.id.videoFragment);
+                    }
+//                    Toast.makeText(this, "last pressed", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.ok:
+                break;
+        }
+    }
 }

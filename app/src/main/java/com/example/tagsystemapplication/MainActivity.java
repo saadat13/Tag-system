@@ -7,6 +7,12 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import android.os.Bundle;
 
+import com.example.tagsystemapplication.ListSlides.ImageListSlide;
+import com.example.tagsystemapplication.ListSlides.TextListSlide;
+import com.example.tagsystemapplication.ListSlides.VideoListSlide;
+import com.example.tagsystemapplication.Objects.ImageObject;
+import com.example.tagsystemapplication.Objects.VideoObject;
+import com.example.tagsystemapplication.Objects.TextObject;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -25,7 +31,7 @@ public class MainActivity extends FragmentActivity{
     SlideAdapter adapter;
 
     public static  ArrayList<TextObject> tobjects = new ArrayList<>();
-    public static  ArrayList<MediaObject> mobjects = new ArrayList<>();
+    public static  ArrayList<VideoObject> mobjects = new ArrayList<>();
     public static  ArrayList<ImageObject> iobjects = new ArrayList<>();
 
     TextListSlide textSlide;
@@ -41,9 +47,9 @@ public class MainActivity extends FragmentActivity{
         sampleTags.add(new MyTag("tag1"));
         sampleTags.add(new MyTag("tag2"));
 
-        mobjects.add(new MediaObject(1, "title", vlink ,vlink,sampleTags));
-        mobjects.add(new MediaObject(2, "title", vlink ,vlink,sampleTags));
-        mobjects.add(new MediaObject(3, "title", vlink ,vlink,sampleTags));
+        mobjects.add(new VideoObject(1, "title", vlink ,vlink,sampleTags));
+        mobjects.add(new VideoObject(2, "title", vlink ,vlink,sampleTags));
+        mobjects.add(new VideoObject(3, "title", vlink ,vlink,sampleTags));
 
         iobjects.add(new ImageObject(1, "image title", link, sampleTags));
         iobjects.add(new ImageObject(2, "image title", link, sampleTags));

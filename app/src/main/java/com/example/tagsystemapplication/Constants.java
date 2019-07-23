@@ -1,6 +1,5 @@
 package com.example.tagsystemapplication;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -9,8 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.tagsystemapplication.Objects.SystemObject;
 
 public class Constants {
 
