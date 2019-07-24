@@ -121,7 +121,6 @@ public class VideoFragment extends Fragment {
     public void onStart() {
         super.onStart();
         initializePlayer();
-
     }
 
 
@@ -129,23 +128,21 @@ public class VideoFragment extends Fragment {
     public void onPause() {
         super.onPause();
         releasePlayer();
-        Toast.makeText(getContext(), "on pause", Toast.LENGTH_SHORT).show();
-
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        initializePlayer();
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        initializePlayer();
+//
+//    }
 
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Toast.makeText(getContext(), "on stop", Toast.LENGTH_SHORT).show();
-
-    }
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//        Toast.makeText(getContext(), "on stop", Toast.LENGTH_SHORT).show();
+//
+//    }
 
     private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
         int type = TextUtils.isEmpty(overrideExtension) ? Util.inferContentType(uri)

@@ -82,6 +82,11 @@ public class MainActivity extends FragmentActivity{
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+    }
 
     class SlideAdapter extends FragmentPagerAdapter{
 

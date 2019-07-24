@@ -28,7 +28,7 @@ public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnCl
     private TextView title;
     private ExpandableTextView content;
     private View parent;
-    private Spinner spinner;
+//    private Spinner spinner;
     private ImageButton options;
     private TextObject object;
 
@@ -38,7 +38,7 @@ public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnCl
         parent = itemView;
         mediaContainer = itemView.findViewById(R.id.mediaContainer);
         title = itemView.findViewById(R.id.tvTitle);
-        spinner = itemView.findViewById(R.id.spinner);
+//        spinner = itemView.findViewById(R.id.spinner);
         progressBar = itemView.findViewById(R.id.progressBar);
         content = itemView.findViewById(R.id.content);
         options = itemView.findViewById(R.id.imageButton);
@@ -48,20 +48,20 @@ public class TextViewHolder extends RecyclerView.ViewHolder implements View.OnCl
         this.object = textObject;
         parent.setTag(this);
         title.setText(textObject.getTitle());
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, textObject.getTags()));
+//        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, textObject.getTags()));
         content.setText(textObject.getStrContent());
         options.setOnClickListener(this);
 
     }
 
     private void refreshTagList(){
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, object.getTags()));
+//        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, object.getTags()));
     }
 
     @Override
     public void onClick(View view) {
-        showOptions(view, object);
-        refreshTagList();
+//        showOptions(view, object);
+//        refreshTagList();
     }
 
 

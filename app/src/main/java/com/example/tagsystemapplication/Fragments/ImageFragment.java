@@ -1,6 +1,7 @@
 package com.example.tagsystemapplication.Fragments;
 
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
 import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
+import com.example.tagsystemapplication.MainActivity;
 import com.example.tagsystemapplication.MainActivityPrime;
 import com.example.tagsystemapplication.MyTag;
 import com.example.tagsystemapplication.Objects.ImageObject;
@@ -49,6 +51,7 @@ public class ImageFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+    @SuppressLint("Assert")
     public ImageFragment() {
         SystemObject object =  MainActivityPrime.items.get(MainActivityPrime.currentItemIndex);
         if(object instanceof ImageObject) {

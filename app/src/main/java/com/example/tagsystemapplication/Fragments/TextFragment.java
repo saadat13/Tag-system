@@ -78,5 +78,7 @@ public class TextFragment extends Fragment {
         listDataChild.put(listDataHeader.get(0), curObject.getTags());
         adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
         tagList.setAdapter(adapter);
+
     }
+
 }

@@ -33,7 +33,7 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
     public RequestManager requestManager;
     private TextView title;
     private View parent;
-    private Spinner spinner;
+//    private Spinner spinner;
     private ImageButton options;
     private ImageObject object;
 
@@ -44,7 +44,7 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
         mediaContainer = itemView.findViewById(R.id.mediaContainer);
         image = itemView.findViewById(R.id.content);
         title = itemView.findViewById(R.id.tvTitle);
-        spinner = itemView.findViewById(R.id.spinner);
+//        spinner = itemView.findViewById(R.id.spinner);
         progressBar = itemView.findViewById(R.id.progressBar);
         options = itemView.findViewById(R.id.imageButton);
     }
@@ -55,7 +55,7 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
         parent.setTag(this);
         title.setText(mediaObject.getTitle());
         options.setOnClickListener(this);
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, mediaObject.getTags()));
+//        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, mediaObject.getTags()));
         loadImage(mediaObject);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,13 +82,13 @@ public class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnC
     }
 
     private void refreshTagList(){
-        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, object.getTags()));
+//        spinner.setAdapter(new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, object.getTags()));
     }
 
     @Override
     public void onClick(View view) {
-        showOptions(view, object);
-        refreshTagList();
+//        showOptions(view, object);
+//        refreshTagList();
     }
 
 

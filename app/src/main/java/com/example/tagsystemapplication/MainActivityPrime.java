@@ -1,6 +1,7 @@
 package com.example.tagsystemapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -38,7 +39,7 @@ public class MainActivityPrime extends AppCompatActivity implements View.OnClick
     String vlink = "https://s5.mihanvideo.com/user_contents/videos/icl0tmmwf0ahqzsdz0evt9aociakjfvgswx/37OPwvWlgvDyrE8FhTuo_240p.mp4";
 
 
-    public static ArrayList<SystemObject> items = new ArrayList<>();
+    public static ArrayList<SystemObject> items = new ArrayList<>(3);
     public static int currentItemIndex = 0;
 
     private ImageButton next;
@@ -53,6 +54,7 @@ public class MainActivityPrime extends AppCompatActivity implements View.OnClick
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        items.clear();
 
         ArrayList<MyTag> sampleTags = new ArrayList<>();
         sampleTags.add(new MyTag("tag1"));
@@ -65,12 +67,15 @@ public class MainActivityPrime extends AppCompatActivity implements View.OnClick
         items.add(new ImageObject(2, "text title", link, sampleTags));
         items.add(new VideoObject(3, "text title", vlink, vlink, sampleTags));
 
+        items.add(new TextObject(1, "text title", sample + sample + sample, sampleTags));
+        items.add(new ImageObject(2, "text title", link, sampleTags));
+        items.add(new VideoObject(3, "text title", vlink, vlink, sampleTags));
+
+
         setContentView(R.layout.activity_main_prime);
 
         navHostFragment = (NavHostFragment)getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment);
-
-
 
         next  = findViewById(R.id.next);
         back  = findViewById(R.id.back);
@@ -113,11 +118,11 @@ public class MainActivityPrime extends AppCompatActivity implements View.OnClick
                     } else if(curItem instanceof VideoObject) {
                         navHostFragment.getNavController().navigate(R.id.videoFragment);
                     }
-//                    Toast.makeText(this, "next pressed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, currentItemIndex + " ", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.back:
-                if(currentItemIndex -1 >= 0){
+                if(currentItemIndex -1 >= items.size()){
                     SystemObject curItem = items.get(--currentItemIndex);
                     if (curItem instanceof TextObject) {
                         navHostFragment.getNavController().navigate(R.id.textFragment);
@@ -126,9 +131,12 @@ public class MainActivityPrime extends AppCompatActivity implements View.OnClick
                     } else /*if(first instanceof VideoObject)*/ {
                         navHostFragment.getNavController().navigate(R.id.videoFragment);
                     }
+                    Toast.makeText(this, currentItemIndex + " ", Toast.LENGTH_SHORT).show();
+
 //                    Toast.makeText(this, "back pressed", Toast.LENGTH_SHORT).show();
                 }else{
-                    finish();
+                    startActivity(new Intent(MainActivityPrime.this, ProcessActivity.class));
+                    MainActivityPrime.this.finish();
                 }
                 break;
             case R.id.first:
@@ -160,6 +168,14 @@ public class MainActivityPrime extends AppCompatActivity implements View.OnClick
                 }
                 break;
             case R.id.ok:
+                if(items.size() > 0){
+                    next.performClick();
+                    if(currentItemIndex > 0) items.remove(--currentItemIndex);
+                    else {
+                        startActivity(new Intent(MainActivityPrime.this, MainActivity.class));
+                        finish();
+                    }
+                }
                 break;
         }
     }

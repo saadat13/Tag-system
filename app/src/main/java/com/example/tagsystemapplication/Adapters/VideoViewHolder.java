@@ -30,7 +30,7 @@ public class VideoViewHolder extends RecyclerView.ViewHolder implements View.OnC
     public RequestManager requestManager;
     private TextView title;
     private View parent;
-    private Spinner spinner;
+//    private Spinner spinner;
     private ImageButton options;
     private VideoObject object;
     private MySpinnerAdapter adapter;
@@ -42,7 +42,7 @@ public class VideoViewHolder extends RecyclerView.ViewHolder implements View.OnC
         mediaContainer = itemView.findViewById(R.id.mediaContainer);
         mediaCoverImage = itemView.findViewById(R.id.content);
         title = itemView.findViewById(R.id.tvTitle);
-        spinner = itemView.findViewById(R.id.spinner);
+//        spinner = itemView.findViewById(R.id.spinner);
         progressBar = itemView.findViewById(R.id.progressBar);
         volumeControl = itemView.findViewById(R.id.ivVolumeControl);
         options = itemView.findViewById(R.id.imageButton);
@@ -55,21 +55,21 @@ public class VideoViewHolder extends RecyclerView.ViewHolder implements View.OnC
         this.object = mediaObject;
         title.setText(mediaObject.getTitle());
         adapter = new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, mediaObject.getTags());
-        spinner.setAdapter(adapter);
+//        spinner.setAdapter(adapter);
         this.requestManager
                 .load(mediaObject.getCoverUrl())
                 .into(mediaCoverImage);
     }
 
-    private void refreshTagList(){
-        adapter = new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, object.getTags());
-        spinner.setAdapter(adapter);
-    }
+//    private void refreshTagList(){
+//        adapter = new MySpinnerAdapter(parent.getContext(), R.layout.tag_item, object.getTags());
+//        spinner.setAdapter(adapter);
+//    }
 
     @Override
     public void onClick(View view) {
-        showOptions(view, object);
-        refreshTagList();
+//        showOptions(view, object);
+//        refreshTagList();
     }
 
 
