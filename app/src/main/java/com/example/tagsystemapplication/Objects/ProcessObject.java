@@ -1,19 +1,29 @@
 package com.example.tagsystemapplication.Objects;
+import com.example.tagsystemapplication.Constants;
 
-import com.example.tagsystemapplication.Constants.TAGGING_METHOD;
+import java.util.ArrayList;
 
 public class ProcessObject {
     private String title;
-    private TAGGING_METHOD taggingMethod;
     private String comments;
-    private int numberOfProfiles;
+    private ArrayList<Profile> profiles;
+    private Constants.TAGGING_METHOD taggingMethod;
 
-    public ProcessObject(String title, String comments, int numberOfProfiles, TAGGING_METHOD taggingMethod){
+    public ProcessObject(String title, String comments, ArrayList<Profile> profiles, Constants.TAGGING_METHOD tagging_method){
         this.title = title;
         this.comments = comments;
-        this.taggingMethod = taggingMethod;
-        this.numberOfProfiles = numberOfProfiles;
+        this.profiles = profiles;
+        this.taggingMethod = tagging_method;
     }
+
+    public Constants.TAGGING_METHOD getTaggingMethod() {
+        return taggingMethod;
+    }
+
+    public void setTaggingMethod(Constants.TAGGING_METHOD taggingMethod) {
+        this.taggingMethod = taggingMethod;
+    }
+
 
     public String getTitle() {
         return title;
@@ -28,12 +38,19 @@ public class ProcessObject {
     }
 
     public String getDetails(){
-        return "Details:\n" + "Tagging method: " +
-                ((taggingMethod == TAGGING_METHOD.SINGLE_MODE)? "Single mode" : "Batch mode")
-                + "\n" + "Number of profiles: " + numberOfProfiles + "\n" + comments;
+        return "Details:\n" + "Number of profiles: " + profiles.size() + "\n" + comments;
+    }
+
+    public ArrayList<Profile> getProfiles() {
+        return profiles;
+    }
+
+    public void setProfiles(ArrayList<Profile> profiles) {
+        this.profiles = profiles;
     }
 
     public void setComments(String comments) {
         this.comments = comments;
     }
+
 }

@@ -4,7 +4,6 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.example.tagsystemapplication.Objects.ProcessObject;
-import com.example.tagsystemapplication.Objects.TextObject;
 import com.example.tagsystemapplication.ProcessActivity;
 import com.example.tagsystemapplication.R;
 
@@ -33,7 +32,7 @@ public class ProcessRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
-        ((ProcessViewHolder) viewHolder).onBind(activity, processObjects.get(i));
+        ((ProcessViewHolder) viewHolder).onBind(activity, processObjects.get(i), i);
     }
 
     @Override

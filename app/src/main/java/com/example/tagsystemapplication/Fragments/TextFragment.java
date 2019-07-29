@@ -15,9 +15,8 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
-import com.example.tagsystemapplication.MainActivityPrime;
+import com.example.tagsystemapplication.DataHolder;
 import com.example.tagsystemapplication.MyTag;
-import com.example.tagsystemapplication.Objects.SystemObject;
 import com.example.tagsystemapplication.Objects.TextObject;
 import com.example.tagsystemapplication.R;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
@@ -42,12 +41,7 @@ public class TextFragment extends Fragment {
 
 
     public TextFragment() {
-        SystemObject object =  MainActivityPrime.items.get(MainActivityPrime.currentItemIndex);
-        if(object instanceof TextObject) {
-            curObject = (TextObject) object;
-        }else{
-            Log.wtf("TAG:::", "none text fragment passed!!!");
-        }
+
     }
 
     public static TextFragment newInstance() {
@@ -68,17 +62,24 @@ public class TextFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        content.setText(curObject.getStrContent());
-        title.setText(curObject.getTitle());
-        ViewGroup.LayoutParams params = tagList.getLayoutParams();
-        params.height += curObject.getTags().size() * 20;
-        tagList.setLayoutParams(params);
-        tagList.requestLayout();
-        listDataHeader.add("Select Tag(s):");
-        listDataChild.put(listDataHeader.get(0), curObject.getTags());
-        adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
-        tagList.setAdapter(adapter);
-
+        int processIndex = DataHolder.currentProcessIndex;
+        int itemIndex    = DataHolder.currentItemIndex;
+        int profileIndex = DataHolder.currentProfileIndex;
+        curObject = (TextObject) DataHolder.getProcesses().get(processIndex).getProfiles().get(profileIndex).getContents().get(itemIndex);
+        if(curObject != null) {
+            content.setText(curObject.getStrContent());
+            title.setText(curObject.getTitle());
+            ViewGroup.LayoutParams params = tagList.getLayoutParams();
+            params.height += curObject.getTags().size() * 20;
+            tagList.setLayoutParams(params);
+            tagList.requestLayout();
+            listDataHeader.add("Select Tag(s):");
+            listDataChild.put(listDataHeader.get(0), curObject.getTags());
+            adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
+            tagList.setAdapter(adapter);
+        }else{
+            Log.e("ERROR:::", "curObject is null");
+        }
     }
 
 }

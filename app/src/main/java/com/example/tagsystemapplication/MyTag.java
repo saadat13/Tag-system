@@ -1,11 +1,28 @@
 package com.example.tagsystemapplication;
 
-public class MyTag {
-    private String title;
-    private boolean selected;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-    public MyTag(String title){
+public class MyTag{
+    private String title;
+    private boolean isChecked;
+
+    public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }
+
+    public MyTag(String title)
+
+    {
         this.title = title;
+    }
+
+    public MyTag(Parcel in) {
+        title = in.readString();
     }
 
     public String getTitle() {
@@ -16,11 +33,4 @@ public class MyTag {
         this.title = title;
     }
 
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
 }

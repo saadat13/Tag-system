@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.example.tagsystemapplication.MyTag;
@@ -41,14 +43,23 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int listPosition, final int expandedListPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-        final String expandedListText = ((MyTag) getChild(listPosition, expandedListPosition)).getTitle();
+        MyTag tag = ((MyTag) getChild(listPosition, expandedListPosition));
+        String expandedListText = tag.getTitle();
+        boolean isChecked = tag.isChecked();
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = layoutInflater.inflate(R.layout.tag_item, null);
         }
-        TextView expandedListTextView = (TextView) convertView
-                .findViewById(R.id.tag_name);
+        TextView expandedListTextView = (TextView) convertView.findViewById(R.id.tag_name);
+        CheckBox checkBox = convertView.findViewById(R.id.checkBox);
+        checkBox.setChecked(isChecked);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                tag.setChecked(b);
+            }
+        });
         expandedListTextView.setText(expandedListText);
         return convertView;
     }

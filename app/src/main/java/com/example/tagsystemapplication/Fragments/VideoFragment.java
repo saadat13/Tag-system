@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.text.TextUtils;
@@ -16,12 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
-import com.example.tagsystemapplication.MainActivityPrime;
+import com.example.tagsystemapplication.DataHolder;
 import com.example.tagsystemapplication.MyTag;
-import com.example.tagsystemapplication.Objects.SystemObject;
 import com.example.tagsystemapplication.Objects.VideoObject;
 import com.example.tagsystemapplication.R;
 import com.google.android.exoplayer2.C;
@@ -40,7 +37,6 @@ import com.google.android.exoplayer2.util.Util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 
 public class VideoFragment extends Fragment {
 
@@ -70,13 +66,6 @@ public class VideoFragment extends Fragment {
     }
 
     public VideoFragment() {
-        SystemObject object =  MainActivityPrime.items.get(MainActivityPrime.currentItemIndex);
-        if(object instanceof VideoObject) {
-            curObject = (VideoObject) object;
-        }else{
-            Log.wtf("TAG:::",("none video fragment passed!!!"));
-        }
-        mediaUrl = curObject.getUrl();
     }
 
     public static VideoFragment newInstance() {
@@ -97,15 +86,25 @@ public class VideoFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        title.setText(curObject.getTitle());
-        ViewGroup.LayoutParams params = tagList.getLayoutParams();
-        params.height += curObject.getTags().size() * 20;
-        tagList.setLayoutParams(params);
-        tagList.requestLayout();
-        listDataHeader.add("Select Tag(s):");
-        listDataChild.put(listDataHeader.get(0), curObject.getTags());
-        adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
-        tagList.setAdapter(adapter);
+        int processIndex = DataHolder.currentProcessIndex;
+        int itemIndex    = DataHolder.currentItemIndex;
+        int profileIndex = DataHolder.currentProfileIndex;
+        curObject = (VideoObject) DataHolder.getProcesses().get(processIndex).getProfiles().get(profileIndex).getContents().get(itemIndex);
+        if(curObject!=null) {
+            title.setText(curObject.getTitle());
+            ViewGroup.LayoutParams params = tagList.getLayoutParams();
+            params.height += curObject.getTags().size() * 20;
+            tagList.setLayoutParams(params);
+            tagList.requestLayout();
+            listDataHeader.add("Select Tag(s):");
+            listDataChild.put(listDataHeader.get(0), curObject.getTags());
+            adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
+            tagList.setAdapter(adapter);
+            mediaUrl = curObject.getUrl();
+            initializePlayer();
+        }else{
+            Log.e("ERROR:::", "curObject is null!!!");
+        }
     }
 
     private void initializePlayer() {
@@ -120,7 +119,7 @@ public class VideoFragment extends Fragment {
 
     public void onStart() {
         super.onStart();
-        initializePlayer();
+        //initializePlayer();
     }
 
 

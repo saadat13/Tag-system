@@ -1,9 +1,7 @@
 package com.example.tagsystemapplication.Fragments;
 
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -20,11 +18,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
 import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
-import com.example.tagsystemapplication.MainActivity;
-import com.example.tagsystemapplication.MainActivityPrime;
+import com.example.tagsystemapplication.DataHolder;
 import com.example.tagsystemapplication.MyTag;
 import com.example.tagsystemapplication.Objects.ImageObject;
 import com.example.tagsystemapplication.Objects.SystemObject;
+import com.example.tagsystemapplication.Objects.TextObject;
 import com.example.tagsystemapplication.R;
 
 import java.util.ArrayList;
@@ -51,14 +49,7 @@ public class ImageFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
-    @SuppressLint("Assert")
     public ImageFragment() {
-        SystemObject object =  MainActivityPrime.items.get(MainActivityPrime.currentItemIndex);
-        if(object instanceof ImageObject) {
-            curObject = (ImageObject) object;
-        }else{
-            Log.wtf("TAG:::",("none image fragment passed!!!"));
-        }
     }
 
     public static TextFragment newInstance() {
@@ -79,16 +70,22 @@ public class ImageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        title.setText(curObject.getTitle());
-        loadImage(curObject, view);
-        ViewGroup.LayoutParams params = tagList.getLayoutParams();
-        params.height += curObject.getTags().size() * 20;
-        tagList.setLayoutParams(params);
-        tagList.requestLayout();
-        listDataHeader.add("Select Tag(s):");
-        listDataChild.put(listDataHeader.get(0), curObject.getTags());
-        adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
-        tagList.setAdapter(adapter);
+        int processIndex = DataHolder.currentProcessIndex;
+        int itemIndex    = DataHolder.currentItemIndex;
+        int profileIndex = DataHolder.currentProfileIndex;
+        curObject = (ImageObject) DataHolder.getProcesses().get(processIndex).getProfiles().get(profileIndex).getContents().get(itemIndex);
+        if(curObject!=null) {
+            title.setText(curObject.getTitle());
+            loadImage(curObject, view);
+            ViewGroup.LayoutParams params = tagList.getLayoutParams();
+            params.height += curObject.getTags().size() * 20;
+            tagList.setLayoutParams(params);
+            tagList.requestLayout();
+            listDataHeader.add("Select Tag(s):");
+            listDataChild.put(listDataHeader.get(0), curObject.getTags());
+            adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
+            tagList.setAdapter(adapter);
+        }
     }
 
     private void loadImage(ImageObject mediaObject, View view) {

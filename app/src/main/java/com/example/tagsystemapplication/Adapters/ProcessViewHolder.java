@@ -1,10 +1,12 @@
 package com.example.tagsystemapplication.Adapters;
 
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.example.tagsystemapplication.MainActivityPrime;
+import com.example.tagsystemapplication.ProfilesActivity;
 import com.example.tagsystemapplication.Objects.ProcessObject;
 import com.example.tagsystemapplication.ProcessActivity;
 import com.example.tagsystemapplication.R;
@@ -33,14 +35,16 @@ public class ProcessViewHolder extends RecyclerView.ViewHolder {
         details = itemView.findViewById(R.id.detail);
     }
 
-    void onBind(ProcessActivity activity, ProcessObject processObject) {
+    void onBind(ProcessActivity activity, ProcessObject processObject, int index) {
         parent.setTag(this);
         title.setText(processObject.getTitle());
         details.setText(processObject.getDetails());
         parent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                activity.startActivity(new Intent(activity, MainActivityPrime.class));
+                Intent intent = new Intent(activity, ProfilesActivity.class);
+                intent.putExtra("processIndex", index);
+                activity.startActivity(intent);
             }
         });
     }
