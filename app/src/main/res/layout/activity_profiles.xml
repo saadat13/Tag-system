@@ -63,7 +63,6 @@
 
     <LinearLayout
         android:id="@+id/panel"
-        android:layout_marginBottom="10dp"
         android:layout_centerHorizontal="true"
         android:layout_above="@id/buttons"
         android:layout_width="wrap_content"

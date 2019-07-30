@@ -6,9 +6,9 @@
     app:startDestination="@+id/textFragment">
     <fragment
         android:id="@+id/videoFragment"
-        android:name="com.example.tagsystemapplication.Fragments.VideoFragment"
+        android:name="com.example.tagsystemapplication.Fragments.ItemFragment"
         android:label="video_item_layout"
-        tools:layout="@layout/video_fragment">
+        tools:layout="@layout/text_fragment">
         <action
             android:id="@+id/action_videoFragment_to_textFragment"
             app:destination="@id/textFragment" />
@@ -18,7 +18,7 @@
     </fragment>
     <fragment
         android:id="@+id/textFragment"
-        android:name="com.example.tagsystemapplication.Fragments.TextFragment"
+        android:name="com.example.tagsystemapplication.Fragments.ItemFragment"
         android:label="text_fragment"
         tools:layout="@layout/text_fragment">
         <action
@@ -30,9 +30,9 @@
     </fragment>
     <fragment
         android:id="@+id/imageFragment"
-        android:name="com.example.tagsystemapplication.Fragments.ImageFragment"
+        android:name="com.example.tagsystemapplication.Fragments.ItemFragment"
         android:label="image_fragment"
-        tools:layout="@layout/image_fragment">
+        tools:layout="@layout/text_fragment">
         <action
             android:id="@+id/action_imageFragment_to_videoFragment3"
             app:destination="@id/videoFragment" />

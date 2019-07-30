@@ -1,0 +1,22 @@
+{
+  "processes": [
+    {
+      "title": "first process",
+      "number_of_profiles": 2,
+      "tagging_method": "singleMode",
+      "other_details": "other details1... -> s1 and s2 json files"
+    },
+    {
+      "title": "second process",
+      "number_of_profiles": 3,
+      "tagging_method": "batchMode",
+      "other_details": "other details2... -> multi-profile json file"
+    },
+    {
+      "title": "third process",
+      "number_of_profiles": 1,
+      "tagging_method": "singleMode",
+      "other_details": "other details3... ->  ss json file"
+    }
+  ]
+}

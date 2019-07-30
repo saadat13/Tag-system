@@ -11,9 +11,8 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
-import com.example.tagsystemapplication.ChecklistActivity;
-import com.example.tagsystemapplication.Objects.SystemObject;
-import com.example.tagsystemapplication.Objects.TextObject;
+import com.example.tagsystemapplication.SummaryActivity;
+import com.example.tagsystemapplication.Objects.Content;
 import com.example.tagsystemapplication.Objects.Profile;
 import com.example.tagsystemapplication.R;
 import com.google.android.material.chip.Chip;
@@ -28,9 +27,9 @@ import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.wi
 public class ItemRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private ArrayList<Profile> items;
-    private ChecklistActivity activity;
+    private SummaryActivity activity;
 
-    public ItemRecyclerAdapter(ChecklistActivity activity, ArrayList<Profile> items) {
+    public ItemRecyclerAdapter(SummaryActivity activity, ArrayList<Profile> items) {
         this.items = items;
         this.activity = activity;
         Log.i("TAG:::", items.get(0).getContents().size() + " ");
@@ -75,35 +74,34 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             parent.setTag(this);
             parent.setOnClickListener(this);
             boolean isMultiContent = profile.getContents().size() > 1;
-            SystemObject firstObject = profile.getContents().get(0);
+            Content firstObject = profile.getContents().get(0);
             if(isMultiContent)
                 title.setText("multi content");
             else
                 title.setText(firstObject.getTitle());
-            for(int i = 0; i< firstObject.getTags().size() ; i++){
+            for(int i = 0; i< profile.getTags().size() ; i++){
                 Chip chip = new Chip(parent.getContext());
-                chip.setText("#" + firstObject.getTitle());
+                chip.setText("#" + profile.getTags().get(i).getTitle());
                 chip.setClickable(true);
                 chip.setCheckable(true);
-                chip.setChecked(firstObject.getTags().get(i).isChecked());
+                chip.setChecked(profile.getTags().get(i).isChecked());
                 hashtags.addView(chip);
             }
             loadImage(firstObject);
         }
 
-        private void loadImage(SystemObject mediaObject) {
+        private void loadImage(Content mediaObject) {
             DrawableCrossFadeFactory factory =
                     new DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build();
             if(profile.getContents().size() > 1){
                 Glide.with(parent)
                         .asBitmap()
                         .transition(withCrossFade(factory))
-                        .load(mediaObject.getUrl())
-                        .placeholder(R.drawable.ic_multicontent)
+                        .load(R.drawable.ic_multicontent)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(image);
             }else{
-                if(!(mediaObject instanceof TextObject)) {
+                if(!(mediaObject.getType().equals("text"))) {
                     Glide.with(parent)
                             .asBitmap()
                             .transition(withCrossFade(factory))

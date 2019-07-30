@@ -24,7 +24,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
     implementation 'com.google.android.material:material:1.0.0-beta01'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
@@ -35,12 +35,15 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.ms-square:expandableTextView:0.1.4'
     implementation 'android.arch.navigation:navigation-fragment:1.0.0'
-//    testImplementation 'junit:junit:4.12'
-//    androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
-//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
-//    implementation 'com.squareup.picasso:picasso:2.2.+'
-//    implementation 'com.google.android.exoplayer:exoplayer-dash:2.10.3'
-//    implementation 'com.google.android.exoplayer:exoplayer-ui:2.10.3'
-//    implementation 'com.google.android.exoplayer:exoplayer-hls:2.10.3'
-//    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.10.3'
+    implementation 'com.amitshekhar.android:android-networking:1.0.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation group: 'com.j256.ormlite', name: 'ormlite-android', version: '5.0'
+    //    testImplementation 'junit:junit:4.12'
+    //    androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
+    //    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
+    //    implementation 'com.squareup.picasso:picasso:2.2.+'
+    //    implementation 'com.google.android.exoplayer:exoplayer-dash:2.10.3'
+    //    implementation 'com.google.android.exoplayer:exoplayer-ui:2.10.3'
+    //    implementation 'com.google.android.exoplayer:exoplayer-hls:2.10.3'
+    //    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.10.3'
 }

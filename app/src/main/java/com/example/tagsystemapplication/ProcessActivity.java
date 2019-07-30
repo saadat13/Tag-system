@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.example.tagsystemapplication.Adapters.ProcessRecyclerAdapter;
-import com.example.tagsystemapplication.Objects.ProcessObject;
+import com.example.tagsystemapplication.Objects.Process;
 import com.example.tagsystemapplication.Objects.Profile;
 
 import java.util.ArrayList;
@@ -14,17 +14,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class ProcessActivity extends Activity {
 
-    private ArrayList<ProcessObject> processes;
+    private ArrayList<Process> processes;
     private  ArrayList<Profile> profiles;
-
-
     RecyclerView rv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_process);
-        processes = DataHolder.getProcesses();
+        DataHolder.initProcess(this);
+        processes = DataHolder.getProcesses(this);
         rv = findViewById(R.id.list);
         setupRecycler();
     }

@@ -1,0 +1,30 @@
+{
+  "hasNext": false,
+  "profiles": [
+    {
+      "id":0,
+      "isMultiContent": false,
+      "isTagged": false,
+      "isValid": false,
+      "contents": [
+        {
+          "uId": 0,
+          "url": "http://icons.iconarchive.com/icons/paomedia/small-n-flat/256/sign-check-icon.png",
+          "title": "tick image",
+          "type": "image"
+        }
+          ],
+      "tags": [
+        {
+          "title": "political",
+          "isChecked": false
+        },
+        {
+          "title": "news",
+          "isChecked": false
+        }
+      ]
+    }
+  ]
+
+}

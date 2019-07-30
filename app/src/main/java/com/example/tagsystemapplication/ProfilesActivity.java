@@ -2,18 +2,23 @@ package com.example.tagsystemapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.example.tagsystemapplication.Objects.ImageObject;
+import com.example.tagsystemapplication.Objects.Output;
+import com.example.tagsystemapplication.Objects.OutputTag;
 import com.example.tagsystemapplication.Objects.Profile;
-import com.example.tagsystemapplication.Objects.SystemObject;
-import com.example.tagsystemapplication.Objects.TextObject;
-import com.example.tagsystemapplication.Objects.VideoObject;
+import com.example.tagsystemapplication.Objects.Content;
+import com.example.tagsystemapplication.Objects.Tag;
+import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -37,9 +42,9 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profiles);
         currentProcessIndex = getIntent().getExtras().getInt("processIndex");
-        profiles = DataHolder.getProcesses().get(currentProcessIndex).getProfiles();
+        profiles = DataHolder.getProfiles(this, currentProcessIndex);
+        setContentView(R.layout.activity_profiles);
         initView();
         currentItemIndex = -1;
         nextItem.performClick();
@@ -119,53 +124,29 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.next_item:
                 if (currentItemIndex + 1 < profiles.get(currentProfileIndex).getContents().size()) {
-                    SystemObject curItem = profiles.get(currentProfileIndex).getContents().get(++currentItemIndex);
-                    if (curItem instanceof TextObject) {
-                        navHostFragment.getNavController().navigate(R.id.textFragment);
-                    } else if (curItem instanceof ImageObject) {
-                        navHostFragment.getNavController().navigate(R.id.imageFragment);
-                    } else if (curItem instanceof VideoObject) {
-                        navHostFragment.getNavController().navigate(R.id.videoFragment);
-                    }
+                    Content curItem = profiles.get(currentProfileIndex).getContents().get(++currentItemIndex);
+                    selectDestination(curItem);
                 }
                 break;
             case R.id.previous_item:
                 if (currentItemIndex - 1 >= 0) {
-                    SystemObject curItem = profiles.get(currentProfileIndex).getContents().get(--currentItemIndex);
-                    if (curItem instanceof TextObject) {
-                        navHostFragment.getNavController().navigate(R.id.textFragment);
-                    } else if (curItem instanceof ImageObject) {
-                        navHostFragment.getNavController().navigate(R.id.imageFragment);
-                    } else /*if(firstProfile instanceof VideoObject)*/ {
-                        navHostFragment.getNavController().navigate(R.id.videoFragment);
-                    }
+                    Content curItem = profiles.get(currentProfileIndex).getContents().get(--currentItemIndex);
+                    selectDestination(curItem);
                 }
                 break;
             case R.id.first_item:
                 if (profiles.get(currentProfileIndex).getContents().size() > 0) {
                     currentItemIndex = 0;
-                    SystemObject firstItem = profiles.get(currentProfileIndex).getContents().get(currentItemIndex);
-                    if (firstItem instanceof TextObject) {
-                        navHostFragment.getNavController().navigate(R.id.textFragment);
-                    } else if (firstItem instanceof ImageObject) {
-                        navHostFragment.getNavController().navigate(R.id.imageFragment);
-                    } else /*if(firstProfile instanceof VideoObject)*/ {
-                        navHostFragment.getNavController().navigate(R.id.videoFragment);
-                    }
+                    Content firstItem = profiles.get(currentProfileIndex).getContents().get(currentItemIndex);
+                    selectDestination(firstItem);
                 }
                 break;
             case R.id.last_item:
                 int size = profiles.get(currentProfileIndex).getContents().size();
                 if (size > 0) {
                     currentItemIndex = size - 1;
-                    SystemObject lastItem = profiles.get(currentProfileIndex).getContents().get(currentItemIndex);
-                    if (lastItem instanceof TextObject) {
-                        navHostFragment.getNavController().navigate(R.id.textFragment);
-                    } else if (lastItem instanceof ImageObject) {
-                        navHostFragment.getNavController().navigate(R.id.imageFragment);
-                    } else /*if(firstProfile instanceof VideoObject)*/ {
-                        navHostFragment.getNavController().navigate(R.id.videoFragment);
-                    }
+                    Content lastItem = profiles.get(currentProfileIndex).getContents().get(currentItemIndex);
+                    selectDestination(lastItem);
                 }
                 break;
             case R.id.ok:
@@ -196,8 +177,8 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                         previousProfile.performClick();
                     }
                     if(profiles.size() == 0) {
-                        DataHolder.getProcesses().remove(currentProcessIndex);
-                        startActivity(new Intent(ProfilesActivity.this, ChecklistActivity.class));
+//                        DataHolder.getProcesses().remove(currentProcessIndex);
+                        startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
                         this.finish();
                     }
                 }
@@ -207,16 +188,30 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         totalPages.setText("pages: " + String.valueOf(profiles.size()));
     }
 
-    private void logTags(Profile profile){
-        StringBuilder builder = new StringBuilder();
-        for(SystemObject c : profile.getContents()){
-            builder.append(String.valueOf(c.getuId())).append(" tags: ");
-            for(MyTag tag : c.getTags()){
-                if(tag.isChecked())
-                    builder.append("#").append(tag.getTitle()).append(" ");
-            }
-            builder.append("\n");
+    private void selectDestination(Content curItem) {
+        if (curItem.getType().equals("text")) {
+            navHostFragment.getNavController().navigate(R.id.textFragment);
+        } else if (curItem.getType().equals("image")) {
+            navHostFragment.getNavController().navigate(R.id.imageFragment);
+        } else if (curItem.getType().equals("video")) {
+            navHostFragment.getNavController().navigate(R.id.videoFragment);
         }
-        Log.e("INFO:::", builder.toString());
+    }
+
+    private void logTags(Profile profile){
+        Gson gson = new Gson();
+        Output output = new Output();
+        ArrayList<OutputTag> tags = new ArrayList<>();
+        for(Tag t : profile.getTags()){
+            tags.add(new OutputTag(t.getTitle()));
+        }
+        output.setTags(tags);
+        String json = gson.toJson(output, Output.class);
+        Log.i("INFO:::", json);
+        try(FileWriter writer = new FileWriter(new File(Environment.getExternalStorageDirectory(), "output.json"))){
+            writer.write(json);
+        }catch (IOException e){
+            Log.i("ERROR:::", e.getMessage());
+        }
     }
 }

@@ -1,11 +1,20 @@
 package com.example.tagsystemapplication;
 
-import com.example.tagsystemapplication.Objects.ImageObject;
-import com.example.tagsystemapplication.Objects.ProcessObject;
-import com.example.tagsystemapplication.Objects.Profile;
-import com.example.tagsystemapplication.Objects.SystemObject;
-import com.example.tagsystemapplication.Objects.TextObject;
+import android.content.Context;
 
+import com.example.tagsystemapplication.Objects.Process;
+import com.example.tagsystemapplication.Objects.Profile;
+import com.example.tagsystemapplication.Objects.ProfileRequest;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class DataHolder {
@@ -22,36 +31,46 @@ public class DataHolder {
     static String link = "http://icons.iconarchive.com/icons/paomedia/small-n-flat/256/sign-check-icon.png";
     static String vlink = "https://s5.mihanvideo.com/user_contents/videos/icl0tmmwf0ahqzsdz0evt9aociakjfvgswx/37OPwvWlgvDyrE8FhTuo_240p.mp4";
 
-    private static ArrayList<ProcessObject> processes;
-    public static ArrayList<Profile> taggedProfiles;
+    private static ArrayList<Process> processes;
+    public static ArrayList<Profile> profiles;
+    public static ArrayList<Profile> taggedProfiles = new ArrayList<>();
+
 
     private static final DataHolder holder = new DataHolder();
 
-    public static void initData(){
-        ArrayList<Profile> profiles = new ArrayList<>();
-        taggedProfiles = new ArrayList<>();
-        processes = new ArrayList<>();
-        ArrayList<SystemObject> objects = new ArrayList<>();
-        ArrayList<SystemObject> objects1 = new ArrayList<>();
-        ArrayList<MyTag> tags = new ArrayList<>();
-        ArrayList<MyTag> tags1 = new ArrayList<>();
-
-        for(int i=0; i <10; i++)
-            tags.add(new MyTag("tag"));
-        for(int i=0; i <10; i++)
-            tags1.add(new MyTag("tag1"));
-        objects.add(new ImageObject(1, link, "image title 1", tags));
-        objects1.add(new TextObject(2, "", "text title 2",sample, tags1));
-        profiles.add(new Profile(objects));
-        profiles.add(new Profile(objects1));
-        processes.add(new ProcessObject("new process 1" ,"other details....", profiles, Constants.TAGGING_METHOD.SINGLE_MODE));
-        processes.add(new ProcessObject("new process 2" ,"other details....", profiles, Constants.TAGGING_METHOD.SINGLE_MODE));
-        processes.add(new ProcessObject("new process 3" ,"other details....", profiles, Constants.TAGGING_METHOD.SINGLE_MODE));
+    public static void initProcess(Context context){
+        InputStream raw =  context.getResources().openRawResource(R.raw.process);
+        Reader rd = new BufferedReader(new InputStreamReader(raw));
+        JsonArray data = new JsonParser().parse(rd).getAsJsonObject().getAsJsonArray("processes");
+        Type listType = new TypeToken<ArrayList<Process>>(){}.getType();
+        processes = new Gson().fromJson(data, listType);
     }
 
-    public static ArrayList<ProcessObject> getProcesses(){
+    public static void initProfiles(Context context, int n){
+        switch (n){
+            case 0:
+                InputStream raw =  context.getResources().openRawResource(R.raw.s1);
+                Reader rd = new BufferedReader(new InputStreamReader(raw));
+                ProfileRequest req = new Gson().fromJson(rd, ProfileRequest.class);
+                profiles  = req.getProfiles();
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+        }
+    }
+
+    public static ArrayList<Profile> getProfiles(Context context, int n){
+        if(profiles == null)
+            initProfiles(context, n);
+        return profiles;
+    }
+
+
+    public static ArrayList<Process> getProcesses(Context context){
         if(processes == null)
-            initData();
+            initProcess(context);
         return processes;
     }
 

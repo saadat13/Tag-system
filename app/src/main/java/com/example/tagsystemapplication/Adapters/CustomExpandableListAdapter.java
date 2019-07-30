@@ -10,7 +10,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
-import com.example.tagsystemapplication.MyTag;
+import com.example.tagsystemapplication.Objects.Tag;
 import com.example.tagsystemapplication.R;
 
 import java.util.HashMap;
@@ -20,10 +20,10 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
 
     private Context context;
     private List<String> expandableListTitle;
-    private HashMap<String, List<MyTag>> expandableListDetail;
+    private HashMap<String, List<Tag>> expandableListDetail;
 
     public CustomExpandableListAdapter(Context context, List<String> expandableListTitle,
-                                       HashMap<String, List<MyTag>> expandableListDetail) {
+                                       HashMap<String, List<Tag>> expandableListDetail) {
         this.context = context;
         this.expandableListTitle = expandableListTitle;
         this.expandableListDetail = expandableListDetail;
@@ -43,7 +43,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int listPosition, final int expandedListPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-        MyTag tag = ((MyTag) getChild(listPosition, expandedListPosition));
+        Tag tag = ((Tag) getChild(listPosition, expandedListPosition));
         String expandedListText = tag.getTitle();
         boolean isChecked = tag.isChecked();
         if (convertView == null) {

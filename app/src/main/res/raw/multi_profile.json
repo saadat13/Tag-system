@@ -1,0 +1,81 @@
+{
+  "hasNext": false,
+  "profiles": [
+    {
+      "id":0,
+      "isMultiContent": false,
+      "isTagged": false,
+      "isValid": false,
+      "contents": [
+        {
+          "uId": 0,
+          "url": "http://www.google.com/",
+          "title": "google text",
+          "type":"text"
+        }
+      ],
+      "tags": [
+        {
+          "title": "some google",
+          "isChecked": false
+        },
+        {
+          "title": "google taste",
+          "isChecked": false
+        },
+        {
+          "title":"google it!",
+          "isChecked":true
+        }
+      ]
+    },
+    {
+      "id":1,
+      "isMultiContent": false,
+      "isTagged": false,
+      "isValid": false,
+      "contents": [
+        {
+          "uId": 2,
+          "url": "https://picsum.photos/200",
+          "title": "random image1",
+          "type":"image"
+        }
+      ],
+      "tags": [
+        {
+          "title": "some random image",
+          "isChecked": false
+        },
+        {
+          "title": "my random images",
+          "isChecked": false
+        }
+        ]
+    },
+    {
+      "id":2,
+      "isMultiContent": false,
+      "isTagged": false,
+      "isValid": false,
+      "contents": [
+        {
+          "uId": 3,
+          "url": "https://picsum.photos/200",
+          "title": "random image2",
+          "type":"image"
+        }
+      ],
+      "tags": [
+        {
+          "title": "some random image2",
+          "isChecked": true
+        },
+        {
+          "title": "my random images2",
+          "isChecked": false
+        }
+      ]
+    }
+  ]
+}

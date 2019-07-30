@@ -3,13 +3,40 @@ package com.example.tagsystemapplication.Objects;
 import java.util.ArrayList;
 
 public class Profile{
-    private ArrayList<SystemObject> contents;
+    private int id;
+    private ArrayList<Content> contents;
+    private ArrayList<Tag> tags;
     private boolean isMultiContent;
-    private boolean hasNext;
-    private boolean isTagged = false;
+    private boolean isTagged;
+    private boolean isValid;
 
-    public Profile(ArrayList<SystemObject> contents) {
+    public Profile(ArrayList<Content> contents, ArrayList<Tag> tags) {
         this.contents = contents;
+        this.tags = tags;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public ArrayList<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(ArrayList<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public boolean isValid() {
+        return isValid;
+    }
+
+    public void setValid(boolean valid) {
+        isValid = valid;
     }
 
     public boolean isTagged() {
@@ -28,19 +55,11 @@ public class Profile{
         isMultiContent = multiContent;
     }
 
-    public boolean isHasNext() {
-        return hasNext;
-    }
-
-    public void setHasNext(boolean hasNext) {
-        this.hasNext = hasNext;
-    }
-
-    public ArrayList<SystemObject> getContents() {
+    public ArrayList<Content> getContents() {
         return contents;
     }
 
-    public void setContents(ArrayList<SystemObject> contents) {
+    public void setContents(ArrayList<Content> contents) {
         this.contents = contents;
     }
 
