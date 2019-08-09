@@ -20,11 +20,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
 import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
-import com.example.tagsystemapplication.Constants;
 import com.example.tagsystemapplication.DataHolder;
-import com.example.tagsystemapplication.Objects.Content;
-import com.example.tagsystemapplication.Objects.Profile;
-import com.example.tagsystemapplication.Objects.Tag;
+import com.example.tagsystemapplication.Models.Content;
+import com.example.tagsystemapplication.Models.Profile;
+import com.example.tagsystemapplication.Models.Tag;
 import com.example.tagsystemapplication.R;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -50,9 +49,6 @@ import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
 
 public class ItemFragment extends Fragment {
-
-
-
     public static Content curObject;
     private ExpandableTextView content;
     private TextView title;
@@ -85,7 +81,7 @@ public class ItemFragment extends Fragment {
         int processIndex = currentProcessIndex;
         int itemIndex    = DataHolder.currentItemIndex;
         int profileIndex = currentProfileIndex;
-        curObject = (Content) DataHolder.getProfiles(getContext(), currentProcessIndex).get(currentProfileIndex).getContents().get(currentItemIndex);
+        curObject = (Content) DataHolder.getProfiles().get(currentProfileIndex).getContents().get(currentItemIndex);
         url = curObject.getUrl();
     }
 
@@ -112,7 +108,7 @@ public class ItemFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Profile profile = DataHolder.getProfiles(getContext(), currentProfileIndex).get(currentProfileIndex);
+        Profile profile = DataHolder.getProfiles().get(currentProfileIndex);
         title.setText(curObject.getTitle());
         ViewGroup.LayoutParams params = tagList.getLayoutParams();
         params.height += profile.getTags().size() * 22;

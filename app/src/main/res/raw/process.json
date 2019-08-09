@@ -1,22 +1,25 @@
 {
   "processes": [
     {
+      "id":1,
       "title": "first process",
-      "number_of_profiles": 2,
-      "tagging_method": "singleMode",
-      "other_details": "other details1... -> s1 and s2 json files"
+      "numberOfProfiles": 2,
+      "tagMethod": "singleMode",
+      "otherDetails": "other details1... -> s1 and s2 json files"
     },
     {
+      "id":2,
       "title": "second process",
-      "number_of_profiles": 3,
-      "tagging_method": "batchMode",
-      "other_details": "other details2... -> multi-profile json file"
+      "numberOfProfiles": 3,
+      "tagMethod": "batchMode",
+      "otherDetails": "other details2... -> multi-profile json file"
     },
     {
+      "id":3,
       "title": "third process",
-      "number_of_profiles": 1,
-      "tagging_method": "singleMode",
-      "other_details": "other details3... ->  ss json file"
+      "numberOfProfiles": 1,
+      "tagMethod": "singleMode",
+      "otherDetails": "other details3... ->  ss json file"
     }
   ]
 }

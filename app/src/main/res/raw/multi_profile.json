@@ -2,13 +2,13 @@
   "hasNext": false,
   "profiles": [
     {
-      "id":0,
+      "id":1,
       "isMultiContent": false,
       "isTagged": false,
       "isValid": false,
       "contents": [
         {
-          "uId": 0,
+          "id":1,
           "url": "http://www.google.com/",
           "title": "google text",
           "type":"text"
@@ -16,42 +16,21 @@
       ],
       "tags": [
         {
+          "id":1,
           "title": "some google",
           "isChecked": false
         },
         {
+          "id":2,
           "title": "google taste",
           "isChecked": false
         },
         {
+          "id":3,
           "title":"google it!",
           "isChecked":true
         }
       ]
-    },
-    {
-      "id":1,
-      "isMultiContent": false,
-      "isTagged": false,
-      "isValid": false,
-      "contents": [
-        {
-          "uId": 2,
-          "url": "https://picsum.photos/200",
-          "title": "random image1",
-          "type":"image"
-        }
-      ],
-      "tags": [
-        {
-          "title": "some random image",
-          "isChecked": false
-        },
-        {
-          "title": "my random images",
-          "isChecked": false
-        }
-        ]
     },
     {
       "id":2,
@@ -60,7 +39,33 @@
       "isValid": false,
       "contents": [
         {
-          "uId": 3,
+          "id": 2,
+          "url": "https://picsum.photos/200",
+          "title": "random image1",
+          "type":"image"
+        }
+      ],
+      "tags": [
+        {
+          "id":4,
+          "title": "some random image",
+          "isChecked": false
+        },
+        {
+          "id":5,
+          "title": "my random images",
+          "isChecked": false
+        }
+        ]
+    },
+    {
+      "id":3,
+      "isMultiContent": false,
+      "isTagged": false,
+      "isValid": false,
+      "contents": [
+        {
+          "id": 3,
           "url": "https://picsum.photos/200",
           "title": "random image2",
           "type":"image"
@@ -68,10 +73,12 @@
       ],
       "tags": [
         {
+          "id":6,
           "title": "some random image2",
           "isChecked": true
         },
         {
+          "id":8,
           "title": "my random images2",
           "isChecked": false
         }

@@ -11,13 +11,13 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
+import com.example.tagsystemapplication.Models.Profile;
 import com.example.tagsystemapplication.SummaryActivity;
-import com.example.tagsystemapplication.Objects.Content;
-import com.example.tagsystemapplication.Objects.Profile;
+import com.example.tagsystemapplication.Models.Content;
 import com.example.tagsystemapplication.R;
 import com.google.android.material.chip.Chip;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,13 +26,13 @@ import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.wi
 
 public class ItemRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private ArrayList<Profile> items;
+    private List<Profile> items;
     private SummaryActivity activity;
 
-    public ItemRecyclerAdapter(SummaryActivity activity, ArrayList<Profile> items) {
+    public ItemRecyclerAdapter(SummaryActivity activity, List<Profile> items) {
         this.items = items;
         this.activity = activity;
-        Log.i("TAG:::", items.get(0).getContents().size() + " ");
+//        Log.i("TAG:::", items.get(0).getContents().size() + " ");
     }
 
     @NonNull

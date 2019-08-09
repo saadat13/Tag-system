@@ -1,29 +1,30 @@
 package com.example.tagsystemapplication;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
-import com.example.tagsystemapplication.Objects.Output;
-import com.example.tagsystemapplication.Objects.OutputTag;
-import com.example.tagsystemapplication.Objects.Profile;
-import com.example.tagsystemapplication.Objects.Content;
-import com.example.tagsystemapplication.Objects.Tag;
+import android.widget.Toast;
+import com.example.tagsystemapplication.Models.Content;
+import com.example.tagsystemapplication.Models.Output;
+import com.example.tagsystemapplication.Models.OutputTag;
+import com.example.tagsystemapplication.Models.Profile;
+import com.example.tagsystemapplication.Models.Tag;
 import com.google.gson.Gson;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.navigation.fragment.NavHostFragment;
-
+import io.realm.RealmResults;
 import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
@@ -36,19 +37,30 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     private NavHostFragment navHostFragment;
     private TextView pageNumber, totalPages;
 
-    ArrayList<Profile> profiles;
-
+    private List<Profile> profiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentProcessIndex = getIntent().getExtras().getInt("processIndex");
-        profiles = DataHolder.getProfiles(this, currentProcessIndex);
-        setContentView(R.layout.activity_profiles);
-        initView();
-        currentItemIndex = -1;
-        nextItem.performClick();
+        DataHolder.loadProfiles(this);
+        profiles = DataHolder.profiles;
+        if (profiles != null) {
+            if (!profiles.isEmpty()) {
+                setContentView(R.layout.activity_profiles);
+                initView();
+                currentItemIndex = -1;
+                nextItem.performClick();
+            }else {
+                Toast.makeText(ProfilesActivity.this, "there is no profile exists!", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }else {
+            Toast.makeText(ProfilesActivity.this, "error in loading profiles", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
+
 
     private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -83,7 +95,6 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         lastProfile.setOnClickListener(this);
         ok.setOnClickListener(this);
     }
-
 
     private String getPageNumber() {
         if(currentProfileIndex >= profiles.size()) return " ";
@@ -177,6 +188,9 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                         previousProfile.performClick();
                     }
                     if(profiles.size() == 0) {
+                        //TODO check if request of profile has next -> if has next then next profile should be
+                        //TODO loaded from server and saved into database and profiles should be reinitialized else
+                        // TODO if has not next then user should navigate to summary activity
 //                        DataHolder.getProcesses().remove(currentProcessIndex);
                         startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
                         this.finish();

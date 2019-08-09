@@ -10,7 +10,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
-import com.example.tagsystemapplication.Objects.Tag;
+import com.example.tagsystemapplication.Models.Tag;
 import com.example.tagsystemapplication.R;
 
 import java.util.HashMap;

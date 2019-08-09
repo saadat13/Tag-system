@@ -6,9 +6,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import com.example.tagsystemapplication.Adapters.ItemRecyclerAdapter;
-import com.example.tagsystemapplication.Objects.Profile;
+import com.example.tagsystemapplication.Models.Profile;
 
-import java.util.ArrayList;
+import java.util.List;
 
 
 public class SummaryActivity extends AppCompatActivity {
@@ -16,7 +16,7 @@ public class SummaryActivity extends AppCompatActivity {
 
     private RecyclerView rv;
     private ItemRecyclerAdapter adapter;
-    private ArrayList<Profile> profiles;
+    private List<Profile> profiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

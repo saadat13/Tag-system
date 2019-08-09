@@ -6,39 +6,43 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.tagsystemapplication.Objects.Process;
+import com.example.tagsystemapplication.Models.Process;
 import com.example.tagsystemapplication.ProcessActivity;
 import com.example.tagsystemapplication.ProfilesActivity;
 import com.example.tagsystemapplication.R;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import io.realm.RealmRecyclerViewAdapter;
+import io.realm.RealmResults;
 
-public class ProcessRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ProcessRecyclerAdapter extends RealmRecyclerViewAdapter<Process, ProcessRecyclerAdapter.ProcessViewHolder> {
 
-    private ArrayList<Process> processObjects;
+    private List<Process> processObjects;
     private ProcessActivity activity;
 
-    public ProcessRecyclerAdapter(ProcessActivity activity, ArrayList<Process> processObjects) {
-        this.processObjects = processObjects;
+    public ProcessRecyclerAdapter(ProcessActivity activity, RealmResults<Process> processes) {
+        super(processes, true);
+        this.processObjects = processes;
         this.activity = activity;
     }
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public ProcessViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         return new ProcessViewHolder(
                 LayoutInflater.from(viewGroup.getContext())
                         .inflate(R.layout.process_item, viewGroup, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
-        ((ProcessViewHolder) viewHolder).onBind(activity, processObjects.get(i), i);
+    public void onBindViewHolder(@NonNull ProcessViewHolder holder, int position) {
+        ((ProcessViewHolder) holder).onBind(activity, processObjects.get(position), position);
     }
+
 
     @Override
     public int getItemCount() {
