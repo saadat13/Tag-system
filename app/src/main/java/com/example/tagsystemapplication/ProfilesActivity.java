@@ -190,7 +190,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                     if(profiles.size() == 0) {
                         //TODO check if request of profile has next -> if has next then next profile should be
                         //TODO loaded from server and saved into database and profiles should be reinitialized else
-                        // TODO if has not next then user should navigate to summary activity
+                        // TODO if has not next then user should be navigated to summary activity
 //                        DataHolder.getProcesses().remove(currentProcessIndex);
                         startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
                         this.finish();

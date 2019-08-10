@@ -56,9 +56,9 @@ public class DataHolder extends Observable{
 
             // convert json to process objects
             JsonArray data = new JsonParser().parse(rd).getAsJsonObject().getAsJsonArray("processes");
-            Type listType = new TypeToken<List<Process>>() {
-            }.getType();
+            Type listType = new TypeToken<List<Process>>() {}.getType();
             DataHolder.processes = new Gson().fromJson(data, listType);
+
             // fill database from processes data
             prc.insertList(processes);
         }else{
@@ -106,9 +106,7 @@ public class DataHolder extends Observable{
 
 
 
-
-
-//    public static List<Process> getProcesses(Context context){
+    //    public static List<Process> getProcesses(Context context){
 //        if(processes == null)
 //            initProcess(context);
 //        return processes;

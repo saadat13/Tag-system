@@ -61,5 +61,10 @@ public class ContentRepository {
         return Contents;
     }
 
+    public void close(){
+        if(realm == null) return;
+        realm.close();
+    }
+
 
 }

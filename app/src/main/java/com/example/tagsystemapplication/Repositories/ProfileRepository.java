@@ -63,5 +63,11 @@ public class ProfileRepository {
         return list;
     }
 
+    public void close(){
+        if(realm == null) return;
+        realm.close();
+    }
+
+
 
 }

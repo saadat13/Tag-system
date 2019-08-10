@@ -54,5 +54,11 @@ public class TagRepository {
         return tags;
     }
 
+    public void close(){
+        if(realm == null) return;
+        realm.close();
+    }
+
+
 
 }

@@ -77,6 +77,12 @@ public class ProcessRepository {
         return processes;
     }
 
+    public void close(){
+        if(realm == null) return;
+        realm.close();
+    }
+
+
 
 
 }

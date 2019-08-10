@@ -3,6 +3,7 @@ package com.example.tagsystemapplication;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import io.realm.Realm;
 
 import android.os.Bundle;
 import com.example.tagsystemapplication.Adapters.ItemRecyclerAdapter;
@@ -32,4 +33,10 @@ public class SummaryActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Realm realm = Realm.getDefaultInstance();
+        if(realm != null) realm.close();
+    }
 }
