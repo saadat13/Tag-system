@@ -1,5 +1,7 @@
 package com.example.tagsystemapplication.Models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 import androidx.annotation.NonNull;
@@ -8,9 +10,12 @@ import io.realm.annotations.PrimaryKey;
 
 public class Tag extends RealmObject implements Serializable {
 
+    @SerializedName("id")
     @PrimaryKey
     private int id;
+    @SerializedName("title")
     private String title;
+    @SerializedName("is_checked")
     private boolean isChecked;
 
     public Tag(){}

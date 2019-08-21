@@ -77,6 +77,13 @@ public class ItemFragment extends Fragment {
 
     }
 
+
+    //TODO this method should be implemented
+//    @Override
+//    public void onSaveInstanceState(@NonNull Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//    }
+
     public ItemFragment() {
         int processIndex = currentProcessIndex;
         int itemIndex    = DataHolder.currentItemIndex;

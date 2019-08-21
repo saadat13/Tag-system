@@ -1,5 +1,7 @@
 package com.example.tagsystemapplication.Models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 import androidx.annotation.NonNull;
@@ -9,23 +11,30 @@ import io.realm.annotations.PrimaryKey;
 
 public class Process extends RealmObject implements Serializable {
 
+    @SerializedName("id")
     @PrimaryKey
     private int id;
+    @SerializedName("title")
     private String title;
+    @SerializedName("number_of_profiles")
     private int numberOfProfiles;
+    @SerializedName("tag_method")
     private String tagMethod;
+    @SerializedName("other_details")
     private String otherDetails;
-    private RealmList<Profile> profiles;
-
-    public RealmList<Profile> getProfiles() {
-        return profiles;
-    }
+    @SerializedName("profiles")
+    private RealmList<ProfilePackage> profilePackages;
 
     public Process() {}
 
+    public RealmList<ProfilePackage> getProfilePackages() {
+        return profilePackages;
+    }
 
-    public void setProfiles(RealmList<Profile> profiles) {
-        this.profiles = profiles;
+
+
+    public void setProfiles(RealmList<ProfilePackage> profiles) {
+        this.profilePackages = profiles;
     }
 
     public int getId() {

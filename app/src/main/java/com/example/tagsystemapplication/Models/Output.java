@@ -1,9 +1,13 @@
 package com.example.tagsystemapplication.Models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 
 public class Output {
+    @SerializedName("id")
     private int id;
+    @SerializedName("tags")
     private ArrayList<OutputTag> tags;
 
     public Output(){

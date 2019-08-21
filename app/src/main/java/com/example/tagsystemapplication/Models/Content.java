@@ -1,17 +1,24 @@
 package com.example.tagsystemapplication.Models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 import androidx.annotation.NonNull;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+import retrofit2.SkipCallbackExecutor;
 
 public class Content extends RealmObject implements Serializable {
 
     @PrimaryKey
+    @SerializedName("id")
     private int id;
+    @SerializedName("url")
     private String url;
+    @SerializedName("title")
     private String title;
+    @SerializedName("type")
     private String type;
 
     public Content(){}

@@ -2,6 +2,8 @@ package com.example.tagsystemapplication.Models;
 
 
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 
 import androidx.annotation.NonNull;
@@ -12,12 +14,18 @@ import io.realm.annotations.PrimaryKey;
 public class Profile extends RealmObject implements Serializable {
 
 
+    @SerializedName("id")
     @PrimaryKey
     private int id;
+    @SerializedName("is_multi_content")
     private boolean isMultiContent;
+    @SerializedName("is_tagged")
     private boolean isTagged;
+    @SerializedName("is_validated")
     private boolean isValidated;
+    @SerializedName("contents")
     private RealmList<Content> contents;
+    @SerializedName("tags")
     private RealmList<Tag>     tags;
 
 

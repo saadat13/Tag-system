@@ -43,8 +43,8 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentProcessIndex = getIntent().getExtras().getInt("processIndex");
-        DataHolder.loadProfiles(this);
-        profiles = DataHolder.profiles;
+        //DataHolder.loadProfiles(this);
+        //profiles = DataHolder.profiles;
         if (profiles != null) {
             if (!profiles.isEmpty()) {
                 setContentView(R.layout.activity_profiles);
