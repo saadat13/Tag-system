@@ -3,22 +3,21 @@ package com.example.tagsystemapplication;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
-import com.example.tagsystemapplication.Adapters.ProcessRecyclerAdapter;
+import com.example.tagsystemapplication.Adapters.ProcessRecyclerAdapter2;
 import com.example.tagsystemapplication.Models.DB;
 import com.example.tagsystemapplication.Models.Process;
-import com.example.tagsystemapplication.Repositories.ProcessRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import io.realm.RealmResults;
 
 public class ProcessActivity extends AppCompatActivity {
 
-    private RealmResults<Process> processes;
+    private List<Process> processes=new ArrayList<>();
+    ProcessRecyclerAdapter2 adapter;
     RecyclerView rv;
 
     @Override
@@ -27,11 +26,10 @@ public class ProcessActivity extends AppCompatActivity {
         setContentView(R.layout.activity_process);
         rv = findViewById(R.id.list);
         DB.initDB(this);
-        DataHolder.loadProcesses(this);
-        //DataHolder.loadProfiles(this);
-        processes = DataHolder.processes;
         setupRecycler();
+        DataHolder.loadProcesses(this);
     }
+
 
     @SuppressLint("StaticFieldLeak")
     private void setupRecycler() {
@@ -39,7 +37,7 @@ public class ProcessActivity extends AppCompatActivity {
         // use a linear layout manager
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         rv.setLayoutManager(layoutManager);
-        ProcessRecyclerAdapter adapter = new ProcessRecyclerAdapter(this, processes);
+        adapter = new ProcessRecyclerAdapter2(this, processes);
         rv.setAdapter(adapter);
     }
 
@@ -49,5 +47,8 @@ public class ProcessActivity extends AppCompatActivity {
         //setupRecycler();
     }
 
-
+    public void updateUI() {
+        processes = DataHolder.processes;
+        setupRecycler();
+    }
 }

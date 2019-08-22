@@ -5,7 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 //make new retrofit object
 public class API_Client {
     private static Retrofit retrofit = null;
-    public static final String BASE_URL = "https://saadat.pythonanywhere.com/api/";
+    public static final String BASE_URL = "http://172.24.69.210:8000/";
 
     public static Retrofit getClient() {
         if (retrofit == null) {

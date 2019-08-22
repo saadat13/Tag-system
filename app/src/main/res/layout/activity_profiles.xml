@@ -49,15 +49,10 @@
         android:layout_marginTop="?android:attr/actionBarSize"
         android:layout_marginBottom="10dp">
 
-        <fragment
-            android:id="@+id/nav_host_fragment"
-            android:name="androidx.navigation.fragment.NavHostFragment"
+        <FrameLayout
+            android:id="@+id/fragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:defaultNavHost="true"
-            app:navGraph="@navigation/nav_graph">
-
-        </fragment>
+            android:layout_height="wrap_content"/>
 
     </ScrollView>
 

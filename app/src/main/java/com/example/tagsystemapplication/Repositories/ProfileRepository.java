@@ -23,7 +23,7 @@ public class ProfileRepository {
                 Profile realmObject = realm.createObject(Profile.class, profile.getId());
                 realmObject.setMultiContent(profile.isMultiContent());
                 realmObject.setTagged(profile.isTagged());
-                realmObject.setValidated(profile.isValidated());
+                realmObject.setIsValidated(profile.getIsValidated());
                 realmObject.setContents(profile.getContents());
                 realmObject.setTags(profile.getTags());
             }

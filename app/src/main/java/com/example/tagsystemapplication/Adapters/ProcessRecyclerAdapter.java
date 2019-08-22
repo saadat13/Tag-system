@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import io.realm.RealmRecyclerViewAdapter;
 import io.realm.RealmResults;
 
+import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
+
 public class ProcessRecyclerAdapter extends RealmRecyclerViewAdapter<Process, ProcessRecyclerAdapter.ProcessViewHolder> {
 
     private List<Process> processObjects;
@@ -75,8 +77,8 @@ public class ProcessRecyclerAdapter extends RealmRecyclerViewAdapter<Process, Pr
             parent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    currentProcessIndex = index;
                     Intent intent = new Intent(activity, ProfilesActivity.class);
-                    intent.putExtra("processIndex", index);
                     activity.startActivity(intent);
                 }
             });

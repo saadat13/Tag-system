@@ -1,13 +1,12 @@
 package com.example.tagsystemapplication.WebService;
 
-import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.Process;
 import com.example.tagsystemapplication.Models.ProfilePackage;
+import com.example.tagsystemapplication.Models.Token;
 
 import java.util.List;
 import java.util.Map;
 
-import io.realm.RealmList;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.HeaderMap;
@@ -16,27 +15,31 @@ import retrofit2.http.Path;
 
 public interface API_Interface {
 
+//    @Header("content_type:application/json")
     @GET("accounts/token/")
-    Call<String> getToken(@HeaderMap Map<String, String> headers);
+    Call<Token> getToken(@HeaderMap Map<String, String> headers);
 
     @GET("accounts/token/refresh/")
     Call<String> refreshToken(@HeaderMap Map<String, String> headers);
 
 
     @GET("api/processes/")
-    Call<RealmList<Process>> getProcesses(@HeaderMap Map<String, String> headers);
+    Call<List<Process>> getProcesses();
+
+    @GET("api/processes/{pid}/package_profiles/{id}/")
+    Call<ProfilePackage> getPackageProfile(@Path("pid") int pid,@Path("id") int id);
 
 
-    @GET("api/processes/{pid}/package_profiles/block/")
-    Call<List<ProfilePackage>> blockProfile(@HeaderMap Map<String, String> headers,@Path("pid") int pid);
+    @GET("api/processes/{pid}/package_profiles/{id}/profiles/{i}/block/")
+    Call<String> blockProfile(@Path("pid") int pid,@Path("id") int id,@Path("i") int i);
 
 
-    @POST("api/processes/{pid}/package_profiles/unblock")
-    Call unblockProfile(@HeaderMap Map<String, String> headers,@Path("pid") int pid);
+    @POST("api/processes/{pid}/package_profiles/{id}/profiles/{i}/unblock/")
+    Call<String> unblockProfile(@Path("pid") int pid,@Path("id") int id,@Path("i") int i);
 
 
     @POST("api/outputs/")
-    Call sendOutput(@HeaderMap Map<String, String> headers);
+    Call<String> sendOutput(@HeaderMap Map<String, String> headers);
 
 
 

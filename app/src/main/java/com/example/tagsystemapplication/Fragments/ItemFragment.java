@@ -49,12 +49,12 @@ import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
 
 public class ItemFragment extends Fragment {
-    public static Content curObject;
+
+    private Content curObject;
     private ExpandableTextView content;
     private TextView title;
     private ImageView imageView;
 
-    private String url;
 
     private ExoPlayer player;
     private PlayerView videoView;
@@ -74,22 +74,26 @@ public class ItemFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+           curObject = getArguments().getParcelable("curObject");
+        }
+    }
 
+    public static ItemFragment newInstance(Content curObject) {
+        Bundle args = new Bundle();
+        args.putParcelable("curObject", curObject);
+        ItemFragment fragment = new ItemFragment();
+        fragment.setArguments(args);
+        return fragment;
     }
 
 
-    //TODO this method should be implemented
-//    @Override
-//    public void onSaveInstanceState(@NonNull Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//    }
 
-    public ItemFragment() {
-        int processIndex = currentProcessIndex;
-        int itemIndex    = DataHolder.currentItemIndex;
-        int profileIndex = currentProfileIndex;
-        curObject = (Content) DataHolder.getProfiles().get(currentProfileIndex).getContents().get(currentItemIndex);
-        url = curObject.getUrl();
+    //TODO this method should be implemented
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("curObject", curObject);
     }
 
 
@@ -115,7 +119,7 @@ public class ItemFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Profile profile = DataHolder.getProfiles().get(currentProfileIndex);
+        Profile profile = DataHolder.profiles.get(currentProfileIndex);
         title.setText(curObject.getTitle());
         ViewGroup.LayoutParams params = tagList.getLayoutParams();
         params.height += profile.getTags().size() * 22;
@@ -128,7 +132,7 @@ public class ItemFragment extends Fragment {
         if(curObject.getType().equals("image"))
             loadImage(imageView);
         else if(curObject.getType().equals("text")){
-            content.setText(url);
+            content.setText(curObject.getUrl());
         }
 
     }
@@ -140,7 +144,7 @@ public class ItemFragment extends Fragment {
         Glide.with(view)
                 .asBitmap()
                 .transition(withCrossFade(factory))
-                .load(url)
+                .load(curObject.getUrl())
                 .placeholder(R.drawable.ic_not_loaded_img)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView);
@@ -152,7 +156,7 @@ public class ItemFragment extends Fragment {
         videoView.setPlayer(player);
         player.setPlayWhenReady(playWhenReady);
         player.seekTo(currentWindow, playbackPosition);
-        Uri uri = Uri.parse(url);
+        Uri uri = Uri.parse(curObject.getUrl());
         MediaSource mediaSource = buildMediaSource(uri, "");
         player.prepare(mediaSource);
     }

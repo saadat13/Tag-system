@@ -3,12 +3,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
+import android.transition.Explode;
+import android.transition.Fade;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.tagsystemapplication.Fragments.ItemFragment;
 import com.example.tagsystemapplication.Models.Content;
 import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.OutputTag;
@@ -23,31 +27,47 @@ import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.fragment.NavHostFragment;
 import io.realm.RealmResults;
 import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
+import static com.example.tagsystemapplication.DataHolder.currentProfilePackage;
 
 
 public class ProfilesActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageButton nextProfile, previousProfile, firstProfile, lastProfile, ok;
     private Button nextItem, previousItem, firstItem, lastItem;
-    private NavHostFragment navHostFragment;
     private TextView pageNumber, totalPages;
-
+    private FragmentManager fragmentManager;
     private List<Profile> profiles;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        currentProcessIndex = getIntent().getExtras().getInt("processIndex");
-        //DataHolder.loadProfiles(this);
-        //profiles = DataHolder.profiles;
+        setContentView(R.layout.activity_profiles);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        fragmentManager = getSupportFragmentManager();
+        if(savedInstanceState!=null){
+            updateUI();
+        }else {
+            DataHolder.loadPackageProfile( this);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    public void updateUI(){
+        profiles = DataHolder.profiles;
         if (profiles != null) {
             if (!profiles.isEmpty()) {
-                setContentView(R.layout.activity_profiles);
                 initView();
                 currentItemIndex = -1;
                 nextItem.performClick();
@@ -61,17 +81,11 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-
     private void initView() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         pageNumber = toolbar.findViewById(R.id.toolbar_title);
         totalPages = toolbar.findViewById(R.id.total_pages);
         pageNumber.setText(getPageNumber());
         totalPages.append(String.valueOf(profiles.size()));
-
-        navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
 
         nextItem = findViewById(R.id.next_item);
         previousItem = findViewById(R.id.previous_item);
@@ -191,9 +205,12 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                         //TODO check if request of profile has next -> if has next then next profile should be
                         //TODO loaded from server and saved into database and profiles should be reinitialized else
                         // TODO if has not next then user should be navigated to summary activity
-//                        DataHolder.getProcesses().remove(currentProcessIndex);
-                        startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
-                        this.finish();
+                        if(currentProfilePackage.hasNext()){
+                            DataHolder.loadNextPackageProfile(this, false);
+                        }else {
+                            startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
+                            this.finish();
+                        }
                     }
                 }
                 break;
@@ -203,14 +220,12 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void selectDestination(Content curItem) {
-        if (curItem.getType().equals("text")) {
-            navHostFragment.getNavController().navigate(R.id.textFragment);
-        } else if (curItem.getType().equals("image")) {
-            navHostFragment.getNavController().navigate(R.id.imageFragment);
-        } else if (curItem.getType().equals("video")) {
-            navHostFragment.getNavController().navigate(R.id.videoFragment);
-        }
+        fragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment, ItemFragment.newInstance(curItem))
+                .commit();
     }
+
 
     private void logTags(Profile profile){
         Gson gson = new Gson();

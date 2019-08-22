@@ -18,12 +18,13 @@ public class Process extends RealmObject implements Serializable {
     private String title;
     @SerializedName("number_of_profiles")
     private int numberOfProfiles;
-    @SerializedName("tag_method")
+    @SerializedName("tagging_method")
     private String tagMethod;
-    @SerializedName("other_details")
+    @SerializedName("details")
     private String otherDetails;
-    @SerializedName("profiles")
-    private RealmList<ProfilePackage> profilePackages;
+
+
+    private RealmList<ProfilePackage> profilePackages = new RealmList<>();
 
     public Process() {}
 
@@ -33,7 +34,8 @@ public class Process extends RealmObject implements Serializable {
 
 
 
-    public void setProfiles(RealmList<ProfilePackage> profiles) {
+
+    public void setProfilePackages(RealmList<ProfilePackage> profiles) {
         this.profilePackages = profiles;
     }
 
