@@ -2,10 +2,15 @@ package com.example.tagsystemapplication.Repositories;
 
 import android.util.Log;
 import com.example.tagsystemapplication.Models.Process;
+import com.example.tagsystemapplication.Models.ProfilePackage;
+
 import java.util.Arrays;
 import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmResults;
+
+import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
+import static com.example.tagsystemapplication.DataHolder.processes;
 
 public class ProcessRepository {
     private Realm realm;
@@ -28,6 +33,19 @@ public class ProcessRepository {
             @Override
             public void onSuccess() {
                 Log.i("REALM_TAG", process.toString() + " has successfully added to database");
+            }
+        });
+    }
+
+    public void deleteCurrent(){
+        RealmResults<Process> result = realm
+                .where(Process.class)
+                .equalTo("id", processes.get(currentProcessIndex).getId())
+                .findAll();
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                result.deleteFirstFromRealm();
             }
         });
     }

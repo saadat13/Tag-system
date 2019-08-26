@@ -22,6 +22,18 @@ public class ProfilePackage extends RealmObject {
     @SerializedName("has_next")
     private boolean hasNext;
 
+    @SerializedName("is_tagged")
+    private boolean isTagged;
+
+    @SerializedName("is_valid")
+    private boolean isValidated;
+
+    @SerializedName("status")
+    private String status;
+
+    @SerializedName("expire_date")
+    private String expireDate;
+
     // this field is for retrofit to use
     @Ignore // ignore realm
     @SerializedName("profiles")
@@ -29,6 +41,42 @@ public class ProfilePackage extends RealmObject {
 
     // for realm to use this
     private RealmList<Profile> realmProfiles;
+
+
+
+
+    public boolean isTagged() {
+        return isTagged;
+    }
+
+    public void setTagged(boolean tagged) {
+        isTagged = tagged;
+    }
+
+    public boolean isValidated() {
+        return isValidated;
+    }
+
+    public void setValidated(boolean validated) {
+        isValidated = validated;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(String expireDate) {
+        this.expireDate = expireDate;
+    }
+
 
     public ArrayList<Profile> getProfiles() {
         return profiles;

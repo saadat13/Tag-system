@@ -24,18 +24,6 @@ public class Profile extends RealmObject implements Serializable {
     @SerializedName("is_multi_content")
     private boolean isMultiContent;
 
-    @SerializedName("is_tagged")
-    private boolean isTagged;
-
-    @SerializedName("is_valid")
-    private boolean isValidated;
-
-    @SerializedName("status")
-    private String status;
-
-    @SerializedName("expire_date")
-    private String expireDate;
-
     @Ignore
     @SerializedName("content")
     private List<Content> contents;
@@ -51,14 +39,6 @@ public class Profile extends RealmObject implements Serializable {
 
     public Profile(){}
 
-
-    public boolean isValidated() {
-        return isValidated;
-    }
-
-    public void setValidated(boolean validated) {
-        isValidated = validated;
-    }
 
     public List<Content> getContents() {
         return contents;
@@ -94,31 +74,6 @@ public class Profile extends RealmObject implements Serializable {
 
 
 
-    public boolean getIsValidated() {
-        return isValidated;
-    }
-
-    public void setIsValidated(boolean isValidated) {
-        this.isValidated = isValidated;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getExpireDate() {
-        return expireDate;
-    }
-
-    public void setExpireDate(String expireDate) {
-        this.expireDate = expireDate;
-    }
-
-
     public void setContents(RealmList<Content> contents) {
         this.contents = contents;
     }
@@ -134,14 +89,6 @@ public class Profile extends RealmObject implements Serializable {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public boolean isTagged() {
-        return isTagged;
-    }
-
-    public void setTagged(boolean tagged) {
-        isTagged = tagged;
     }
 
     public boolean isMultiContent() {

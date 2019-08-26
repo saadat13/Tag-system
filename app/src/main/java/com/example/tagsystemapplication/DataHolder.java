@@ -1,5 +1,7 @@
 package com.example.tagsystemapplication;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,6 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import io.realm.OrderedCollectionChangeSet;
+import io.realm.OrderedRealmCollectionChangeListener;
+import io.realm.Realm;
 import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,100 +35,142 @@ public class DataHolder{
     public static int currentProcessIndex=0;
 
 
+
     public static List<Process> processes = new ArrayList<>();
 
     public  static List<Profile> profiles = new ArrayList<>();
     public static List<Profile> taggedProfiles = new ArrayList<>();
 
-    public static ProfilePackage currentProfilePackage = new ProfilePackage();
+    public static ProfilePackage currentProfilePackage = null;
 
     public static String TOKEN = "";
     public static HashMap<String, String> HEADER = new HashMap<>();
 
 
     public static void loadProcesses(ProcessActivity observer){
-        //TODO first expire time of process must be checked
-        // TODO if it not expired then data should be loaded from local database
-        // TODO else database should be erased and then data should be retrieved from server and
-        //TODO then saved into data base
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<Process> processesFromDB;
+        OrderedRealmCollectionChangeListener<RealmResults<Process>> callback = (results, changeSet) -> {
+            if (changeSet == null) {
+                // The first time async returns with an null changeSet.
+            } else {
+                // Called on every update.
+                // load processes from database
+                if(!results.isEmpty()) {
+                    //Toast.makeText(observer, "loading from db...", Toast.LENGTH_SHORT).show();
+                    DataHolder.processes = realm.copyFromRealm(results);
+                    observer.updateUI();
+                    //realm.close();
+                }else{
+                    //get data from server
+                    Toast.makeText(observer, "loading from server...", Toast.LENGTH_SHORT).show();
+                    API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
+                    Call<List<Process>> call = apiInterface.getProcesses();
+                    call.enqueue(new Callback<List<Process>>() {
+                        @Override
+                        public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
+                            if(response.code() == 200) {
+                                processes = response.body();
+                                observer.updateUI();
+                                ProcessRepository rep = new ProcessRepository(); // insert processes into database
+                                rep.insertList(processes);
+                                rep.close();
+                            }else{
+                                Log.e("Response:", "Response is not successful!");
+                                onProcessLoadError(observer);
+                            }
+                        }
 
-        ProcessRepository prc = new ProcessRepository();
-        RealmResults<Process> processesFromDB = prc.findAll();
-//        initHeaders();
-        if(processesFromDB.isEmpty()) {
-            //get data from server
-            API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-            Call<List<Process>> call = apiInterface.getProcesses();
-            call.enqueue(new Callback<List<Process>>() {
-                @Override
-                public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
-                    if(response.isSuccessful()) {
-                        processes = response.body();
-                        observer.updateUI();
-                    }else{
-                        Log.e("Response:", "Response is not successful!");
-                    }
+                        @Override
+                        public void onFailure(Call<List<Process>> call, Throwable t) {
+                            t.printStackTrace();
+                            onProcessLoadError(observer);
+                        }
+                    });
                 }
-
-                @Override
-                public void onFailure(Call<List<Process>> call, Throwable t) {
-                    t.printStackTrace();
-                }
-            });
-
-            //fill database from processes data
-            //prc.insertList(processes);
-        }else{
-            Toast.makeText(observer, "loading from db...", Toast.LENGTH_SHORT).show();
-            DataHolder.processes = processesFromDB;
-            observer.updateUI();
-        }
-
-    }
-
-    public static void loadPackageProfile(ProfilesActivity activity){
-        ProfilePackageRepository ppr = new ProfilePackageRepository();
-        ArrayList<ProfilePackage> packages = ppr.find(currentProfilePackage.getProcessId());
-        if(packages != null){
-            if(!packages.isEmpty()){
-                for(ProfilePackage p : packages){
-                    profiles.addAll(p.getProfiles());
-                }
-                activity.updateUI();
             }
-        }else{
-            loadNextPackageProfile(activity ,true);
+            //realm.close();
+        };
+        // async finding implemented because number of records may be enormous and loading may take some time
+        processesFromDB = realm.where(Process.class).findAllAsync();
+        processesFromDB.addChangeListener(callback);
+
+    }
+
+    private static void onProcessLoadError(ProcessActivity observer) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(observer)
+                .setTitle("connection error")
+                .setMessage("connecting to server failed")
+                .setPositiveButton("reload", (dialogInterface, i) -> {
+                    loadProcesses(observer);
+                    dialogInterface.dismiss();
+                });
+        builder.create().show();
+    }
+
+    private static void onProfileLoadError(ProfilesActivity observer) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(observer)
+                .setTitle("connection error")
+                .setMessage("connecting to server failed")
+                .setPositiveButton("reload", (dialogInterface, i) -> {
+                    loadPackageProfile(observer);
+                    dialogInterface.dismiss();
+                });
+        builder.create().show();
+    }
+
+    public static void loadPackageProfile(ProfilesActivity activity) {
+        if (processes.get(currentProcessIndex).getProfilePackages() != null) {
+            try{
+                // always one and only one package is in memory and database for a certain process
+                currentProfilePackage = processes.get(currentProcessIndex).getProfilePackages().get(0);
+                if(Long.valueOf(currentProfilePackage.getExpireDate()) < System.currentTimeMillis())
+                    profiles.addAll(currentProfilePackage.getProfiles());
+            }catch (IndexOutOfBoundsException|NullPointerException e){
+                loadPackageFromServer(activity);
+                Log.e("MyException:::", e.getMessage().toString());
+            }
+        } else {
+            loadPackageFromServer(activity);
         }
     }
 
-
-    public static void loadNextPackageProfile(ProfilesActivity activity,  boolean isFirstTime){
-        if(currentProfilePackage.hasNext() || isFirstTime){
-            API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-            Call<ProfilePackage> call = apiInterface.getPackageProfile(1, 1);
-            call.enqueue(new Callback<ProfilePackage>() {
-                @Override
-                public void onResponse(Call<ProfilePackage> call, Response<ProfilePackage> response) {
-                    if(response.code() == 200){
-                        currentProfilePackage = response.body();
-                        if(currentProfilePackage!=null) {
-                            profiles.addAll(currentProfilePackage.getProfiles());
-                            activity.updateUI();
-                            updateDatabase();
-                        } else
-                            Log.e("Response:::", "null profiles loaded from response!");
-                    }else{
-                        Log.i("Response:::", response.toString());
+    private static void loadPackageFromServer(ProfilesActivity activity) {
+        API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
+        Call<ProfilePackage> call = apiInterface.getPackageProfile(processes.get(currentProcessIndex).getId());
+        call.enqueue(new Callback<ProfilePackage>() {
+            @Override
+            public void onResponse(Call<ProfilePackage> call, Response<ProfilePackage> response) {
+                if (response.code() == 200) {
+                    currentProfilePackage = response.body();
+                    if (currentProfilePackage != null) {
+                        profiles.addAll(currentProfilePackage.getProfiles());
+                        activity.updateUI();
+                        updateDatabase();
+                        Toast.makeText(activity, "database is updating...", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("Response:::", "null profiles loaded from response!");
+                        onProfileLoadError(activity);
                     }
+                }else if(response.code() == 404){
+                    Toast.makeText(activity, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
+                    new ProcessRepository().deleteCurrent();
+                    processes.remove(currentItemIndex);
+                    activity.finish();
+                } else {
+                    Log.i("Response:::", response.toString());
+                    onProfileLoadError(activity);
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ProfilePackage> call, Throwable t) {
-                    Log.e("Response:::", t.toString());
-                }
-            });
-        }
+            @Override
+            public void onFailure(Call<ProfilePackage> call, Throwable t) {
+                Log.e("Response:::", t.toString());
+                onProfileLoadError(activity);
+            }
+        });
     }
+
 
     public static void updateDatabase(){
         // save profiles in database
@@ -141,21 +188,15 @@ public class DataHolder{
         ProcessRepository prc = new ProcessRepository();
         prc.insertList(DataHolder.processes);
         Log.i("MSG:::", "Database has updated successfully!");
+        ppr.close();
+        pr.close();
+        tr.close();
+        cr.close();
+        prc.close();
     }
 
     public static void initHeaders(){
         HEADER.put("content_type", "application/json");
     }
 
-    //public static List<Profile> getProfiles(){
-//        return profiles;
-//    }
-
-//            InputStream raw = context.getResources().openRawResource(R.raw.process);
-//            Reader rd = new BufferedReader(new InputStreamReader(raw));
-//
-//            // convert json to process objects
-//            JsonArray data = new JsonParser().parse(rd).getAsJsonObject().getAsJsonArray("processes");
-//            Type listType = new TypeToken<List<Process>>() {}.getType();
-//            DataHolder.processes = new Gson().fromJson(data, listType);
 }

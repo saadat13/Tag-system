@@ -2,6 +2,7 @@ package com.example.tagsystemapplication.Repositories;
 
 import android.util.Log;
 
+import com.example.tagsystemapplication.Models.Profile;
 import com.example.tagsystemapplication.Models.ProfilePackage;
 
 import java.util.ArrayList;
@@ -32,14 +33,17 @@ public class ProfilePackageRepository {
         });
     }
 
+    public void delete(int id){
+        RealmResults<ProfilePackage> profilePackage = realm.where(ProfilePackage.class).equalTo("id", id).findAll();
+        realm.executeTransaction((realm)->{
+            profilePackage.deleteFirstFromRealm();
+        });
+    }
 
     public ArrayList<ProfilePackage> find(int processId){
         Process process = realm.where(Process.class)
                 .equalTo("id", processId).findFirst();
-        if(process!=null){
-            return new ArrayList<>(realm.copyFromRealm(process.getProfilePackages()));
-        }
-        return null;
+        return new ArrayList<>(realm.copyFromRealm(process.getProfilePackages()));
     }
 
     public void close(){

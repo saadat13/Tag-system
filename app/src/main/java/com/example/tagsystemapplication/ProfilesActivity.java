@@ -1,11 +1,5 @@
 package com.example.tagsystemapplication;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.ContactsContract;
-import android.transition.Explode;
-import android.transition.Fade;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -18,22 +12,25 @@ import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.OutputTag;
 import com.example.tagsystemapplication.Models.Profile;
 import com.example.tagsystemapplication.Models.Tag;
-import com.google.gson.Gson;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.example.tagsystemapplication.Repositories.ProfilePackageRepository;
+import com.example.tagsystemapplication.WebService.API_Client;
+import com.example.tagsystemapplication.WebService.API_Interface;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
-import androidx.navigation.fragment.NavHostFragment;
-import io.realm.RealmResults;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfilePackage;
+import static com.example.tagsystemapplication.DataHolder.processes;
 
 
 public class ProfilesActivity extends AppCompatActivity implements View.OnClickListener {
@@ -63,6 +60,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
     }
+
 
     public void updateUI(){
         profiles = DataHolder.profiles;
@@ -181,22 +179,15 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                     Profile current = profiles.get(cur);
                     if (cur == numOfContents - 1) {
                         previousProfile.performClick();
-                        current.setTagged(true);
-                        logTags(current);
-                        DataHolder.taggedProfiles.add(current);
+                        sendTags(current);
                         profiles.remove(cur);
                     } else if (cur == 0) {
                         nextProfile.performClick();
-                        current.setTagged(true);
-                        logTags(current);
-                        DataHolder.taggedProfiles.add(current);
+                        sendTags(current);
                         profiles.remove(cur);
                         previousProfile.performClick();
                     } else /*if (cur > 0 && cur < numOfContents)*/ {
-                        profiles.get(cur).setTagged(true);
-                        current.setTagged(true);
-                        logTags(current);
-                        DataHolder.taggedProfiles.add(current);
+                        sendTags(current);
                         profiles.remove(cur);
                         nextProfile.performClick();
                         previousProfile.performClick();
@@ -206,9 +197,11 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                         //TODO loaded from server and saved into database and profiles should be reinitialized else
                         // TODO if has not next then user should be navigated to summary activity
                         if(currentProfilePackage.hasNext()){
-                            DataHolder.loadNextPackageProfile(this, false);
+                            ProfilePackageRepository ppr = new ProfilePackageRepository();
+                            ppr.delete(currentProfilePackage.getId());
+                            DataHolder.loadPackageProfile(this);
                         }else {
-                            startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
+                            //startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
                             this.finish();
                         }
                     }
@@ -227,20 +220,30 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     }
 
 
-    private void logTags(Profile profile){
-        Gson gson = new Gson();
-        Output output = new Output();
+    private void sendTags(Profile profile){
+//        Gson gson = new Gson();
         ArrayList<OutputTag> tags = new ArrayList<>();
-        for(Tag t : profile.getTags()){
+        for(Tag t : profile.getTags())
             tags.add(new OutputTag(t.getTitle()));
-        }
-        output.setTags(tags);
-        String json = gson.toJson(output, Output.class);
-        Log.i("INFO:::", json);
-        try(FileWriter writer = new FileWriter(new File(Environment.getExternalStorageDirectory(), "output.json"))){
-            writer.write(json);
-        }catch (IOException e){
-            Log.i("ERROR:::", e.getMessage());
-        }
+
+        Output output = new Output(currentProfilePackage.getId(), processes.get(currentProcessIndex).getId(), profile.getId(), tags);
+        //sending to server ...
+        API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
+        Call<Output> call = apiInterface.sendOutput(output);
+        call.enqueue(new Callback<Output>() {
+            @Override
+            public void onResponse(Call<Output> call, Response<Output> response) {
+                if(response.isSuccessful()){
+                    Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Output> call, Throwable t) {
+
+            }
+        });
+
+
     }
 }
