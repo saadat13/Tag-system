@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.HashMap;
 
@@ -29,7 +30,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
     EditText et_user;
     EditText et_pass;
-    Button btn_signin;
+    MaterialButton btn_signin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             //TODO send user and pass to server if sign in was successful
             //TODO then username and password must be saved in system for next sign in's
 
-            boolean register_flag = registerUser(user, pass);
+           // boolean register_flag = registerUser(user, pass);
 
             //if login was successful
             SharedPreferences pref = getPreferences(MODE_PRIVATE);
@@ -96,8 +97,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     private boolean registerUser(final String username, String password) {
         boolean flag = false;
         API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-
-
         HashMap<String, String> hashMap = new HashMap<>();
         hashMap.put("username", username);
         hashMap.put("password", password);

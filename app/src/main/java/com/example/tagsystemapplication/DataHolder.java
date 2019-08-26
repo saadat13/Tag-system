@@ -30,6 +30,10 @@ import retrofit2.Response;
 
 public class DataHolder{
 
+    public enum Roles{Expert, FullExpert}
+
+    public static Roles UserRole = Roles.Expert;  // default user role is expert
+
     public static int currentProfileIndex = 0;
     public static int currentItemIndex = 0;
     public static int currentProcessIndex=0;

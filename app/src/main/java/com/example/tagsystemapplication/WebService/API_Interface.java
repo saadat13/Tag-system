@@ -3,7 +3,7 @@ package com.example.tagsystemapplication.WebService;
 import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.Process;
 import com.example.tagsystemapplication.Models.ProfilePackage;
-import com.example.tagsystemapplication.Models.Token;
+import com.example.tagsystemapplication.Models.UserResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -11,9 +11,7 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.HeaderMap;
-import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
@@ -21,7 +19,7 @@ public interface API_Interface {
 
 //    @Header("content_type:application/json")
     @GET("accounts/token/")
-    Call<Token> getToken(@HeaderMap Map<String, String> headers);
+    Call<UserResponse> getToken(@HeaderMap Map<String, String> headers);
 
     @GET("accounts/token/refresh/")
     Call<String> refreshToken(@HeaderMap Map<String, String> headers);

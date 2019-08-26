@@ -20,12 +20,13 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".SignInActivity">
-        </activity>
-        <activity android:name=".ProcessActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".ProcessActivity">
+
         </activity>
         <activity android:name=".ProfilesActivity"></activity>
         <activity android:name=".SummaryActivity" />

@@ -35,8 +35,8 @@ import static com.example.tagsystemapplication.DataHolder.processes;
 
 public class ProfilesActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageButton nextProfile, previousProfile, firstProfile, lastProfile, ok;
-    private Button nextItem, previousItem, firstItem, lastItem;
+    private ImageButton nextProfile, previousProfile, firstProfile, lastProfile,
+            ok, nextItem, previousItem, firstItem, lastItem;
     private TextView pageNumber, totalPages;
     private FragmentManager fragmentManager;
     private List<Profile> profiles;
