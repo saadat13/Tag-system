@@ -19,7 +19,7 @@ import static com.example.tagsystemapplication.DataHolder.USER_SAVED_DATA;
 //make new retrofit object
 public class API_Client {
     private static Retrofit retrofit = null;
-    public static final String BASE_URL = "http://172.23.150.112:8000/";
+    public static final String BASE_URL = "http://172.24.69.210:8000/";
 
     public static Retrofit getAuthorizedClient(){
         OkHttpClient.Builder client = new OkHttpClient.Builder();

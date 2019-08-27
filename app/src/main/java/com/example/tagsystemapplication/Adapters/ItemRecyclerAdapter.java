@@ -1,6 +1,5 @@
 package com.example.tagsystemapplication.Adapters;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
 import com.example.tagsystemapplication.Models.Profile;
-import com.example.tagsystemapplication.SummaryActivity;
 import com.example.tagsystemapplication.Models.Content;
 import com.example.tagsystemapplication.R;
 import com.google.android.material.chip.Chip;
@@ -27,13 +25,13 @@ import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.wi
 public class ItemRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<Profile> items;
-    private SummaryActivity activity;
-
-    public ItemRecyclerAdapter(SummaryActivity activity, List<Profile> items) {
-        this.items = items;
-        this.activity = activity;
-//        Log.i("TAG:::", items.get(0).getContents().size() + " ");
-    }
+//    private SummaryActivity activity;
+//
+//    public ItemRecyclerAdapter(SummaryActivity activity, List<Profile> items) {
+//        this.items = items;
+//        this.activity = activity;
+////        Log.i("TAG:::", items.get(0).getContents().size() + " ");
+//    }
 
     @NonNull
     @Override

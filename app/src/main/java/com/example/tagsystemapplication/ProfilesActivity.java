@@ -2,6 +2,7 @@ package com.example.tagsystemapplication;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +27,8 @@ import com.example.tagsystemapplication.WebService.API_Interface;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -46,10 +49,12 @@ import static com.example.tagsystemapplication.DataHolder.processes;
 public class ProfilesActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageButton nextProfile, previousProfile, firstProfile, lastProfile, ok, nextItem, previousItem, firstItem, lastItem;
-    private TextView pageNumber, totalPages;
+    private TextView pageNumber, totalPages, tvTime;
     private FragmentManager fragmentManager;
     private List<Profile> profiles;
     private Toolbar toolbar;
+    private CountDownTimer timer;
+    private long mTimeLeftInMillis = 0L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +95,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     private void initView() {
         pageNumber = toolbar.findViewById(R.id.toolbar_title);
         totalPages = toolbar.findViewById(R.id.total_pages);
+        tvTime     = toolbar.findViewById(R.id.timer);
         pageNumber.setText(getPageNumber());
         totalPages.append(String.valueOf(profiles.size()));
 
@@ -114,6 +120,23 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         firstProfile.setOnClickListener(this);
         lastProfile.setOnClickListener(this);
         ok.setOnClickListener(this);
+
+        long remainingTimeMilis = Long.valueOf(currentProfilePackage.getExpireDate()) - System.currentTimeMillis();
+        mTimeLeftInMillis = remainingTimeMilis;
+        timer = new CountDownTimer(remainingTimeMilis, 1) {
+            public void onTick(long millisUntilFinished) {
+                long hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % TimeUnit.HOURS.toMinutes(1);
+                long seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % TimeUnit.MINUTES.toSeconds(1);
+
+                String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
+                tvTime.setText(timeLeftFormatted);
+            }
+            public void onFinish() {
+//                mTextField.setText("done!");
+            }
+        };
+        timer.start();
     }
 
     private String getPageNumber() {
@@ -209,7 +232,6 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                             ppr.delete(currentProfilePackage.getId());
                             loadPackageProfile();
                         }else {
-                            //startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
                             this.finish();
                         }
                     }
@@ -315,13 +337,13 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                             updateUI();
                             updateDatabase();
                             Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
-                        }else if(response.code() == 401){
-                            DataHolder.reinitHeaders(ProfilesActivity.this);
-                            Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
-                        } else {
+                        }else {
                             Log.e("Response:::", "null profiles loaded from response!");
                             onProfileLoadError();
                         }
+                    }else if(response.code() == 401){
+                        DataHolder.reinitHeaders(ProfilesActivity.this);
+                        Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
                     }else if(response.code() == 404){
                         Toast.makeText(ProfilesActivity.this, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
                         new ProcessRepository().deleteCurrent();

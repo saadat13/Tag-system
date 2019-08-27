@@ -7,6 +7,7 @@ import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.tagsystemapplication.Adapters.ProcessRecyclerAdapter2;
@@ -22,6 +23,7 @@ import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import io.realm.OrderedCollectionChangeSet;
 import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
@@ -39,21 +41,32 @@ public class ProcessActivity extends AppCompatActivity {
 
     ProcessRecyclerAdapter2 adapter;
     RecyclerView rv;
-    ProgressBar progressBar;
+    SwipeRefreshLayout swipeRefreshLayout;
+    TextView tv_load_error;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_process);
         rv = findViewById(R.id.list);
-        progressBar = findViewById(R.id.progress);
-        progressBar.setVisibility(View.VISIBLE);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        tv_load_error = findViewById(R.id.tv_load_error);
         DB.initDB(this);
         setupRecycler();
-//        loadProcesses();
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                tv_load_error.setVisibility(View.GONE);
+                loadProcesses();
+            }
+        });
     }
 
-    @SuppressLint("StaticFieldLeak")
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
     private void setupRecycler() {
         rv.setHasFixedSize(true);
         // use a linear layout manager
@@ -65,6 +78,32 @@ public class ProcessActivity extends AppCompatActivity {
 
     public void loadProcesses() {
         if (isConnectedToInternet(this)) {
+            //get data from server
+            Toast.makeText(this, "loading from server...", Toast.LENGTH_SHORT).show();
+            API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
+            Call<List<Process>> call = apiInterface.getProcesses();
+            call.enqueue(new Callback<List<Process>>() {
+                @Override
+                public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
+                    if (response.code() == 200) {
+                        processes = response.body();
+                        updateUI();
+                        ProcessRepository rep = new ProcessRepository(); // insert processes into database
+                        rep.insertList(processes);
+                        rep.close();
+                    } else {
+                        Log.e("Response:", "Response is not successful!");
+                        onProcessLoadError();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Process>> call, Throwable t) {
+                    t.printStackTrace();
+                    onProcessLoadError();
+                }
+            });
+        }else{
             Realm realm = Realm.getDefaultInstance();
             //async finding implemented because number of records may be enormous and loading may take some time
             RealmResults<Process> processesFromDB;
@@ -79,32 +118,6 @@ public class ProcessActivity extends AppCompatActivity {
                         processes = realm.copyFromRealm(results);
                         updateUI();
                         //realm.close();
-                    } else {
-                        //get data from server
-                        Toast.makeText(this, "loading from server...", Toast.LENGTH_SHORT).show();
-                        API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
-                        Call<List<Process>> call = apiInterface.getProcesses();
-                        call.enqueue(new Callback<List<Process>>() {
-                            @Override
-                            public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
-                                if (response.code() == 200) {
-                                    processes = response.body();
-                                    updateUI();
-                                    ProcessRepository rep = new ProcessRepository(); // insert processes into database
-                                    rep.insertList(processes);
-                                    rep.close();
-                                } else {
-                                    Log.e("Response:", "Response is not successful!");
-                                    onProcessLoadError();
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<List<Process>> call, Throwable t) {
-                                t.printStackTrace();
-                                onProcessLoadError();
-                            }
-                        });
                     }
                 }
 //                //realm.close();
@@ -116,28 +129,20 @@ public class ProcessActivity extends AppCompatActivity {
     }
 
     private void onProcessLoadError() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("connection error")
-                .setMessage("connecting to server failed")
-                .setPositiveButton("reload", (dialogInterface, i) -> {
-                    loadProcesses();
-                    dialogInterface.dismiss();
-                })
-                .setNegativeButton("Exit", (dialogInterface, i) -> {
-                    this.finish();
-                });
-        builder.create().show();
+        tv_load_error.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        swipeRefreshLayout.setRefreshing(true);
         loadProcesses();
     }
 
     public void updateUI() {
-        progressBar.setVisibility(View.GONE);
-        rv.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setRefreshing(false);
         setupRecycler();
+        rv.setVisibility(View.VISIBLE);
     }
 }

@@ -44,14 +44,11 @@ public class DataHolder{
 
     public static List<Process> processes = new ArrayList<>();
     public static List<Profile> profiles = new ArrayList<>();
-    public static List<Profile> taggedProfiles = new ArrayList<>();
 
     public static ProfilePackage currentProfilePackage = null;
 
     public static LoginResponse USER_RESPONSE = null;
 
-
-    public static HashMap<String, String> HEADERS = new HashMap<>();
 
     public static String[] USER_SAVED_DATA = null;
 

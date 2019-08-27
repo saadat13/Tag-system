@@ -80,7 +80,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("connection error")
                 .setMessage("connecting to server failed")
-                .setPositiveButton("reload", (dialogInterface, i) -> {
+                .setPositiveButton("Reload", (dialogInterface, i) -> {
                     attemptSignIn(username, password);
                     dialogInterface.dismiss();
                 });
