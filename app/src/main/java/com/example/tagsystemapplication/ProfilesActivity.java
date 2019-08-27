@@ -1,5 +1,8 @@
 package com.example.tagsystemapplication;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -11,8 +14,13 @@ import com.example.tagsystemapplication.Models.Content;
 import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.OutputTag;
 import com.example.tagsystemapplication.Models.Profile;
+import com.example.tagsystemapplication.Models.ProfilePackage;
 import com.example.tagsystemapplication.Models.Tag;
+import com.example.tagsystemapplication.Repositories.ContentRepository;
+import com.example.tagsystemapplication.Repositories.ProcessRepository;
 import com.example.tagsystemapplication.Repositories.ProfilePackageRepository;
+import com.example.tagsystemapplication.Repositories.ProfileRepository;
+import com.example.tagsystemapplication.Repositories.TagRepository;
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 
@@ -26,17 +34,18 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.example.tagsystemapplication.DataHolder.USER_RESPONSE;
 import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfilePackage;
+import static com.example.tagsystemapplication.DataHolder.isConnectedToInternet;
 import static com.example.tagsystemapplication.DataHolder.processes;
 
 
 public class ProfilesActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageButton nextProfile, previousProfile, firstProfile, lastProfile,
-            ok, nextItem, previousItem, firstItem, lastItem;
+    private ImageButton nextProfile, previousProfile, firstProfile, lastProfile, ok, nextItem, previousItem, firstItem, lastItem;
     private TextView pageNumber, totalPages;
     private FragmentManager fragmentManager;
     private List<Profile> profiles;
@@ -52,7 +61,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         if(savedInstanceState!=null){
             updateUI();
         }else {
-            DataHolder.loadPackageProfile( this);
+            loadPackageProfile();
         }
     }
 
@@ -60,7 +69,6 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
     }
-
 
     public void updateUI(){
         profiles = DataHolder.profiles;
@@ -199,7 +207,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                         if(currentProfilePackage.hasNext()){
                             ProfilePackageRepository ppr = new ProfilePackageRepository();
                             ppr.delete(currentProfilePackage.getId());
-                            DataHolder.loadPackageProfile(this);
+                            loadPackageProfile();
                         }else {
                             //startActivity(new Intent(ProfilesActivity.this, SummaryActivity.class));
                             this.finish();
@@ -219,31 +227,143 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 .commit();
     }
 
-
     private void sendTags(Profile profile){
-//        Gson gson = new Gson();
-        ArrayList<OutputTag> tags = new ArrayList<>();
-        for(Tag t : profile.getTags())
-            tags.add(new OutputTag(t.getTitle()));
+        if(isConnectedToInternet(this)) {
+            ArrayList<OutputTag> tags = new ArrayList<>();
+            for (Tag t : profile.getTags())
+                tags.add(new OutputTag(t.getTitle()));
 
-        Output output = new Output(currentProfilePackage.getId(), processes.get(currentProcessIndex).getId(), profile.getId(), tags);
-        //sending to server ...
-        API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-        Call<Output> call = apiInterface.sendOutput(output);
-        call.enqueue(new Callback<Output>() {
-            @Override
-            public void onResponse(Call<Output> call, Response<Output> response) {
-                if(response.isSuccessful()){
-                    Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
+            Output output = new Output(currentProfilePackage.getId(), processes.get(currentProcessIndex).getId(), profile.getId(), tags);
+            //sending to server ...
+            API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
+            Call<Output> call = apiInterface.sendOutput(output);
+            call.enqueue(new Callback<Output>() {
+                @Override
+                public void onResponse(Call<Output> call, Response<Output> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
+                    }else{
+                        onSendingError(profile);
+                    }
                 }
+
+                @Override
+                public void onFailure(Call<Output> call, Throwable t) {
+                    Log.e("Response:::", "");
+                    t.printStackTrace();
+                }
+            });
+        }else{
+            onSendingError(profile);
+        }
+    }
+
+    private void onSendingError(Profile profile){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("connection error")
+                .setMessage("sending tags to server failed")
+                .setCancelable(false)
+                .setPositiveButton("Resend", (dialogInterface, i) -> {
+                    sendTags(profile);
+                    dialogInterface.dismiss();
+                });
+        builder.create().show();
+    }
+
+    private void onProfileLoadError() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("connection error")
+                .setMessage("connecting to server failed")
+                .setCancelable(false)
+                .setPositiveButton("Reload", (dialogInterface, i) -> {
+                    loadPackageProfile();
+                    dialogInterface.dismiss();
+                })
+                .setNegativeButton("Exit", (dialogInterface, i) -> {
+                    this.finish();
+                });
+        builder.create().show();
+    }
+
+    public void loadPackageProfile() {
+        if (processes.get(currentProcessIndex).getProfilePackages() != null) {
+            try{
+                // always one and only one package is in memory and database for a certain process
+                currentProfilePackage = processes.get(currentProcessIndex).getProfilePackages().get(0);
+                if(Long.valueOf(currentProfilePackage.getExpireDate()) < System.currentTimeMillis())
+                    DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
+            }catch (IndexOutOfBoundsException|NullPointerException e){
+                loadPackageFromServer();
+                Log.e("MyException:::", e.getMessage().toString());
             }
+        } else {
+            loadPackageFromServer();
+        }
+    }
 
-            @Override
-            public void onFailure(Call<Output> call, Throwable t) {
+    private void loadPackageFromServer() {
+        if(isConnectedToInternet(this)){
+            API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
+            Call<ProfilePackage> call = apiInterface.getPackageProfile(processes.get(currentProcessIndex).getId());
+            call.enqueue(new Callback<ProfilePackage>() {
+                @Override
+                public void onResponse(Call<ProfilePackage> call, Response<ProfilePackage> response) {
+                    if (response.code() == 200) {
+                        currentProfilePackage = response.body();
+                        if (currentProfilePackage != null) {
+                            DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
+                            updateUI();
+                            updateDatabase();
+                            Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
+                        }else if(response.code() == 401){
+                            DataHolder.reinitHeaders(ProfilesActivity.this);
+                            Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Response:::", "null profiles loaded from response!");
+                            onProfileLoadError();
+                        }
+                    }else if(response.code() == 404){
+                        Toast.makeText(ProfilesActivity.this, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
+                        new ProcessRepository().deleteCurrent();
+                        processes.remove(currentItemIndex);
+                        finish();
+                    } else {
+                        Log.i("Response:::", response.toString());
+                        onProfileLoadError();
+                    }
+                }
 
-            }
-        });
+                @Override
+                public void onFailure(Call<ProfilePackage> call, Throwable t) {
+                    Log.e("Response:::", t.toString());
+                    onProfileLoadError();
+                }
+            });
+        }else{
+            onProfileLoadError();
+        }
+    }
 
-
+    public static void updateDatabase(){
+        // save profiles in database
+        ProfilePackageRepository ppr = new ProfilePackageRepository();
+        ProfileRepository pr = new ProfileRepository();
+        TagRepository tr = new TagRepository();
+        ContentRepository cr = new ContentRepository();
+        for (Profile p : currentProfilePackage.getProfiles()) {
+            tr.insertList(p.getTags());
+            cr.insertList(p.getContents());
+        }
+        pr.insertList(DataHolder.profiles);
+        ppr.insert(currentProfilePackage);
+        //update processes
+        ProcessRepository prc = new ProcessRepository();
+        prc.insertList(DataHolder.processes);
+        Log.i("MSG:::", "Database has updated successfully!");
+        ppr.close();
+        pr.close();
+        tr.close();
+        cr.close();
+        prc.close();
     }
 }

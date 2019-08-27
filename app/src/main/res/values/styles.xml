@@ -5,7 +5,6 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:imageButtonStyle">@drawable/ic_filter_state</item>
     </style>
 
     <style name="MyImageButton" parent="android:Widget.ImageButton">

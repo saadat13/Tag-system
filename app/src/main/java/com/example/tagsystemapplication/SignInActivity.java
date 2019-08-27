@@ -5,26 +5,22 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.transition.Explode;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.transition.Transition;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.View;
-import android.view.Window;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
+import com.example.tagsystemapplication.Models.LoginResponse;
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.HashMap;
+
+import static com.example.tagsystemapplication.DataHolder.isConnectedToInternet;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -35,17 +31,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        // Apply activity transition
-        // inside your activity (if you did not enable transitions in your theme)
-//            getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-//            // set an exit transition
-////            slide.setSlideEdge(Gravity.RIGHT);
-//            getWindow().setExitTransition(Transition.);
-//        } else {
-//            // Swap without transition
-//        }
-
         setContentView(R.layout.activity_signin);
         initView();
     }
@@ -55,12 +40,14 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         et_pass = findViewById(R.id.password);
         btn_signin = findViewById(R.id.sin);
         btn_signin.setOnClickListener(this);
+
         SharedPreferences pref = getPreferences(MODE_PRIVATE);
         String username = pref.getString("username", "");
         String password = pref.getString("password", "");
         et_user.setText(username);
         et_pass.setText(password);
     }
+
 
     @Override
     public void onClick(View view) {
@@ -70,49 +57,68 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             if (user.isEmpty()) {
                 et_user.setError("please enter username");
                 return;
-            }
-            if (pass.isEmpty()) {
+            }else if (pass.isEmpty()) {
                 et_pass.setError("please enter password");
                 return;
             }
-            //TODO send user and pass to server if sign in was successful
-            //TODO then username and password must be saved in system for next sign in's
 
-           // boolean register_flag = registerUser(user, pass);
-
-            //if login was successful
-            SharedPreferences pref = getPreferences(MODE_PRIVATE);
-            SharedPreferences.Editor editor = pref.edit();
-            editor.putString("username", user);
-            editor.putString("password", pass);
-            editor.apply();
-
-            // navigate user to processes activity
-            Intent intent = new Intent(SignInActivity.this, ProcessActivity.class);
-            startActivity(intent);
-//            overridePendingTransition(R.anim.slide_right, R.anim.slide_left);
+            // attempt login to server
+            attemptSignIn(user, pass);
         }
     }
 
-    private boolean registerUser(final String username, String password) {
-        boolean flag = false;
+    private void saveUserData(String username, String password){
+        //first save user data in storage for next usages
+        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("username", username);
+        editor.putString("password", password);
+        editor.apply();
+    }
+
+    private void onSignInError(String username, String password) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("connection error")
+                .setMessage("connecting to server failed")
+                .setPositiveButton("reload", (dialogInterface, i) -> {
+                    attemptSignIn(username, password);
+                    dialogInterface.dismiss();
+                });
+        builder.create().show();
+    }
+
+    private void attemptSignIn(String username, String password) {
+        if(!isConnectedToInternet(this)) onSignInError(username, password);
+
+        HashMap<String, String> userpass = new HashMap<>();
+        userpass.put("username", username);
+        userpass.put("password", password);
+
         API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-        HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("username", username);
-        hashMap.put("password", password);
-        Call call = apiInterface.getToken(hashMap);
-
-        call.enqueue(new Callback() {
+        Call<LoginResponse> call = apiInterface.getToken(userpass);
+        call.enqueue(new Callback<LoginResponse>() {
             @Override
-            public void onResponse(Call call, Response response) {
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                if(response.isSuccessful()){
+                    saveUserData(username, password);
+                    DataHolder.USER_SAVED_DATA = new String[]{username, password};
+                    DataHolder.USER_RESPONSE = response.body();
+                    // navigate user to processes activity
+                    startActivity(new Intent(SignInActivity.this, ProcessActivity.class));
 
+                }else{
+                    Log.e("Response:::", response.message().toString());
+                    onSignInError(username, password);
+                }
             }
 
             @Override
-            public void onFailure(Call call, Throwable t) {
-
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                Log.e("Response:::", "");
+                t.printStackTrace();
+                onSignInError(username, password);
             }
         });
-        return flag;
+
     }
 }
