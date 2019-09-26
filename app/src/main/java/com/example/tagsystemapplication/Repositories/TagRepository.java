@@ -33,7 +33,7 @@ public class TagRepository {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                realm.copyToRealmOrUpdate(tags);
+                realm.insertOrUpdate(tags);
             }
         }, new Realm.Transaction.OnSuccess() {
             @Override

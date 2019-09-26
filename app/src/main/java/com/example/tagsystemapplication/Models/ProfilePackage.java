@@ -3,11 +3,15 @@ package com.example.tagsystemapplication.Models;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
+import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
 import io.realm.annotations.Ignore;
+import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
 
 public class ProfilePackage extends RealmObject {
@@ -37,11 +41,13 @@ public class ProfilePackage extends RealmObject {
     // this field is for retrofit to use
     @Ignore // ignore realm
     @SerializedName("profiles")
-    private ArrayList<Profile> profiles;
+    private List<Profile> profiles;
 
     // for realm to use this
-    private RealmList<Profile> realmProfiles;
+    private RealmList<Profile> realmProfiles = null;
 
+    @LinkingObjects("realmProfilePackages")
+    private final RealmResults<Process> fromProfilePackages = null;
 
 
 
@@ -78,11 +84,11 @@ public class ProfilePackage extends RealmObject {
     }
 
 
-    public ArrayList<Profile> getProfiles() {
-        return profiles;
+    public List<Profile> getProfiles() {
+        return (realmProfiles != null)? Realm.getDefaultInstance().copyFromRealm(realmProfiles): profiles;
     }
 
-    public void setProfiles(ArrayList<Profile> profiles) {
+    public void setProfiles(List<Profile> profiles) {
         this.profiles = profiles;
     }
 

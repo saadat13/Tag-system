@@ -9,7 +9,7 @@ import java.util.List;
 
 import retrofit2.SkipCallbackExecutor;
 
-public class Output implements Serializable {
+public class Output {
     @SerializedName("process_id")
     private int processId;
 

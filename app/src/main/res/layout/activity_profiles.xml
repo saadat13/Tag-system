@@ -54,12 +54,12 @@
 
     <FrameLayout
         android:id="@+id/fragment"
-        android:layout_above="@+id/panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginTop="?android:attr/actionBarSize"
-        android:layout_marginBottom="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_above="@id/panel"
+        />
 
 
     <LinearLayout

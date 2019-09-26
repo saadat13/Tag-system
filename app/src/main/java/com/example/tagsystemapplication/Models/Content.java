@@ -5,14 +5,14 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.io.Serializable;
 
 import androidx.annotation.NonNull;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
+import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
-import retrofit2.SkipCallbackExecutor;
 
-public class Content extends RealmObject implements Serializable, Parcelable {
+public class Content extends RealmObject implements Parcelable {
 
     @PrimaryKey
     @SerializedName("id")
@@ -24,7 +24,12 @@ public class Content extends RealmObject implements Serializable, Parcelable {
     @SerializedName("type")
     private String type;
 
+    @LinkingObjects("realmContents")
+    private final RealmResults<Profile> fromRealmContents = null;
+
+
     public Content(){}
+
 
     protected Content(Parcel in) {
         id = in.readInt();

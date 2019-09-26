@@ -6,15 +6,20 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
 import io.realm.annotations.Ignore;
+import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
 
-public class Profile extends RealmObject implements Serializable {
+public class Profile extends RealmObject{
 
 
     @SerializedName("id")
@@ -32,6 +37,10 @@ public class Profile extends RealmObject implements Serializable {
     @SerializedName("tag")
     private List<Tag> tags;
 
+    @LinkingObjects("realmProfiles")
+    private final RealmResults<ProfilePackage> fromProfiles = null;
+
+
     // these two fields is for database not for retrofit
 
     private RealmList<Content> realmContents;
@@ -40,8 +49,9 @@ public class Profile extends RealmObject implements Serializable {
     public Profile(){}
 
 
+
     public List<Content> getContents() {
-        return contents;
+        return (realmContents != null)? new ArrayList<>(realmContents): contents;
     }
 
     public void setContents(List<Content> contents) {
@@ -49,7 +59,7 @@ public class Profile extends RealmObject implements Serializable {
     }
 
     public List<Tag> getTags() {
-        return tags;
+        return (realmTags != null)? new ArrayList<>(realmTags): tags;
     }
 
     public void setTags(List<Tag> tags) {
@@ -71,7 +81,6 @@ public class Profile extends RealmObject implements Serializable {
     public void setRealmTags(RealmList<Tag> realmTags) {
         this.realmTags = realmTags;
     }
-
 
 
     public void setContents(RealmList<Content> contents) {

@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Switch;
 
 import com.example.tagsystemapplication.Models.LoginResponse;
 import com.example.tagsystemapplication.WebService.API_Client;
@@ -27,6 +28,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     EditText et_user;
     EditText et_pass;
     MaterialButton btn_signin;
+    Switch off_switch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         et_user = findViewById(R.id.name);
         et_pass = findViewById(R.id.password);
         btn_signin = findViewById(R.id.sin);
+        off_switch = findViewById(R.id.off_switch);
+        off_switch.setOnClickListener(this);
         btn_signin.setOnClickListener(this);
 
         SharedPreferences pref = getPreferences(MODE_PRIVATE);
@@ -52,18 +56,29 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.sin) {
-            String user = et_user.getText().toString();
-            String pass = et_pass.getText().toString();
-            if (user.isEmpty()) {
-                et_user.setError("please enter username");
-                return;
-            }else if (pass.isEmpty()) {
-                et_pass.setError("please enter password");
-                return;
-            }
+            if(off_switch.isChecked()){
+                // navigate user to process activity
+                startActivity(new Intent(SignInActivity.this, ProcessActivity.class));
+            }else {
+                String user = et_user.getText().toString();
+                String pass = et_pass.getText().toString();
+                if (user.isEmpty()) {
+                    et_user.setError("please enter username");
+                    return;
+                } else if (pass.isEmpty()) {
+                    et_pass.setError("please enter password");
+                    return;
+                }
 
-            // attempt login to server
-            attemptSignIn(user, pass);
+                // attempt login to server
+                attemptSignIn(user, pass);
+            }
+        }else if(view.getId() == R.id.off_switch){
+            if(off_switch.isChecked()){
+                btn_signin.setText("Enter");
+            }else{
+                btn_signin.setText("Sign In");
+            }
         }
     }
 
@@ -99,13 +114,12 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         call.enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                if(response.isSuccessful()){
+                if(response.code() == 200){
                     saveUserData(username, password);
                     DataHolder.USER_SAVED_DATA = new String[]{username, password};
                     DataHolder.USER_RESPONSE = response.body();
                     // navigate user to processes activity
                     startActivity(new Intent(SignInActivity.this, ProcessActivity.class));
-
                 }else{
                     Log.e("Response:::", response.message().toString());
                     onSignInError(username, password);

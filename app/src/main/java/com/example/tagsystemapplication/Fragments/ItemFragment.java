@@ -61,6 +61,7 @@ public class ItemFragment extends Fragment {
     private ExpandableListView tagList;
     private CustomExpandableListAdapter adapter;
 
+
     private List<String> listDataHeader = new ArrayList<>();
     private HashMap<String, List<Tag>> listDataChild = new HashMap<>();
 
@@ -122,7 +123,7 @@ public class ItemFragment extends Fragment {
         Profile profile = DataHolder.profiles.get(currentProfileIndex);
         title.setText(curObject.getTitle());
         ViewGroup.LayoutParams params = tagList.getLayoutParams();
-        params.height += profile.getTags().size() * 22;
+        params.height += profile.getTags().size() * 30;
         tagList.setLayoutParams(params);
         tagList.requestLayout();
         listDataHeader.add("Select Tag(s):");

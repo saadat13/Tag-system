@@ -44,8 +44,9 @@ public class DataHolder{
 
     public static List<Process> processes = new ArrayList<>();
     public static List<Profile> profiles = new ArrayList<>();
-
     public static ProfilePackage currentProfilePackage = null;
+
+
 
     public static LoginResponse USER_RESPONSE = null;
 
@@ -62,8 +63,10 @@ public class DataHolder{
             public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
                 if(response.isSuccessful()){
                     USER_RESPONSE.setAccessToken(response.body().getAccessToken());
+                    Log.wtf("TAG:::", "refresh token obtained successfully");
                 }else if(response.code() == 401){ // refresh token is expired
-                    reSignIn(context);
+                    //reSignIn(context);
+                    // resign in is redundant
                 } else{
                     Log.e("Response:::", "token reinitializing failed!!!");
                 }

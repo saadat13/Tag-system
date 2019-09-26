@@ -38,7 +38,7 @@ public class ProfileRepository {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-               realm.copyToRealmOrUpdate(profiles);
+                realm.insertOrUpdate(profiles);
             }
         }, new Realm.Transaction.OnSuccess() {
             @Override

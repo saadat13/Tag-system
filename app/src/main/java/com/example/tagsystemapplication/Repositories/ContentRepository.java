@@ -18,10 +18,7 @@ public class ContentRepository {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                Content realmObject = realm.createObject(Content.class, content.getId());
-                realmObject.setTitle(content.getTitle());
-                realmObject.setType(content.getType());
-                realmObject.setUrl(content.getUrl());
+                realm.insertOrUpdate(content);
             }
         }, new Realm.Transaction.OnSuccess() {
             @Override
@@ -35,12 +32,7 @@ public class ContentRepository {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                for(Content content : contents){
-                    Content realmObject = realm.createObject(Content.class, content.getId());
-                    realmObject.setTitle(content.getTitle());
-                    realmObject.setType(content.getType());
-                    realmObject.setUrl(content.getUrl());
-                }
+                realm.insertOrUpdate(contents);
             }
         }, new Realm.Transaction.OnSuccess() {
             @Override

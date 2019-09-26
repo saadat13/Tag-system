@@ -1,7 +1,9 @@
 package com.example.tagsystemapplication.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import android.widget.TextView;
 import com.example.tagsystemapplication.Models.Tag;
 import com.example.tagsystemapplication.R;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,6 +32,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         this.expandableListDetail = expandableListDetail;
     }
 
+
     @Override
     public Object getChild(int listPosition, int expandedListPosition) {
         return this.expandableListDetail.get(this.expandableListTitle.get(listPosition))
@@ -41,28 +45,48 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getChildView(int listPosition, final int expandedListPosition,
-                             boolean isLastChild, View convertView, ViewGroup parent) {
-        Tag tag = ((Tag) getChild(listPosition, expandedListPosition));
-        String expandedListText = tag.getTitle();
-        boolean isChecked = tag.isChecked();
+    public View getChildView(final int groupPosition, final int childPosition,
+                             boolean isLastChild, View convertView, final ViewGroup parent) {
+        View rootView;
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = layoutInflater.inflate(R.layout.tag_item, null);
+            rootView = layoutInflater.inflate(R.layout.tag_item, parent, false);
+        }else{
+            rootView = convertView;
         }
-        TextView expandedListTextView = (TextView) convertView.findViewById(R.id.tag_name);
-        CheckBox checkBox = convertView.findViewById(R.id.checkBox);
+
+        Tag tag = ((Tag) getChild(groupPosition, childPosition));
+        String expandedListText = tag.getTitle();
+        String percent = tag.getPercent() + "%";
+        boolean isChecked = tag.isChecked();
+        TextView expandedListTextView = rootView.findViewById(R.id.tag_name);
+        CheckBox checkBox = rootView.findViewById(R.id.checkBox);
+        TextView tv_percent = rootView.findViewById(R.id.tv_percent);
+        tv_percent.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("users")
+                    .setMessage(Arrays.toString(tag.getUsers().toArray()))
+                    .setPositiveButton("ok", null)
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .create()
+                    .show();
+        });
+        tv_percent.setText(percent);
+//        Log.wtf("CHECKBOX:::", isChecked + " ");
         checkBox.setChecked(isChecked);
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                tag.setChecked(b);
+            public void onClick(View view) {
+                final boolean isChecked = checkBox.isChecked();
+                tag.setChecked(isChecked);
             }
         });
         expandedListTextView.setText(expandedListText);
-        return convertView;
+
+        return rootView;
     }
+
 
     @Override
     public int getChildrenCount(int listPosition) {
@@ -89,16 +113,19 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int listPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
         String listTitle = (String) getGroup(listPosition);
+        View rootView;
         if (convertView == null) {
             LayoutInflater layoutInflater = (LayoutInflater) this.context.
                     getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = layoutInflater.inflate(R.layout.list_group, null);
+            rootView = layoutInflater.inflate(R.layout.list_group, parent, false);
+        }else{
+            rootView = convertView;
         }
-        TextView listTitleTextView = (TextView) convertView
+        TextView listTitleTextView = (TextView) rootView
                 .findViewById(R.id.lblListHeader);
         listTitleTextView.setTypeface(null, Typeface.BOLD);
         listTitleTextView.setText(listTitle);
-        return convertView;
+        return rootView;
     }
 
     @Override

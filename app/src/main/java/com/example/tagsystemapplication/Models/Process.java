@@ -2,14 +2,18 @@ package com.example.tagsystemapplication.Models;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
+import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 
-public class Process extends RealmObject implements Serializable {
+public class Process extends RealmObject {
 
     @SerializedName("id")
     @PrimaryKey
@@ -23,20 +27,30 @@ public class Process extends RealmObject implements Serializable {
     @SerializedName("details")
     private String otherDetails;
 
+    private RealmList<ProfilePackage> realmProfilePackages = null;
 
-    private RealmList<ProfilePackage> profilePackages = new RealmList<>();
+    @Ignore
+    private List<ProfilePackage> profilePackages;
+
+
+    // including handling on database mode and server mode
+    public List<ProfilePackage> getProfilePackages() {
+        return (realmProfilePackages != null)? new ArrayList<>(realmProfilePackages): profilePackages;
+    }
+
+    public void setProfilePackages(List<ProfilePackage> profilePackages) {
+        this.profilePackages = profilePackages;
+    }
 
     public Process() {}
 
-    public RealmList<ProfilePackage> getProfilePackages() {
-        return profilePackages;
+
+    public RealmList<ProfilePackage> getRealmProfilePackages() {
+        return realmProfilePackages;
     }
 
-
-
-
-    public void setProfilePackages(RealmList<ProfilePackage> profiles) {
-        this.profilePackages = profiles;
+    public void setRealmProfilePackages(RealmList<ProfilePackage> profiles) {
+        this.realmProfilePackages = profiles;
     }
 
     public int getId() {
@@ -83,5 +97,17 @@ public class Process extends RealmObject implements Serializable {
     @Override
     public String toString() {
         return String.format("process %d, title: %s", id, title);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if(this == obj) return true;
+        if(!(obj instanceof Process)) return false;
+        Process other = (Process)obj;
+        return other.id == this.id &&
+                other.numberOfProfiles == this.numberOfProfiles &&
+                other.otherDetails.equals(this.otherDetails) &&
+                other.tagMethod.equals(this.tagMethod) &&
+                other.title.equals(this.title);
     }
 }

@@ -11,6 +11,7 @@ import io.realm.RealmResults;
 
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.processes;
+import static com.example.tagsystemapplication.DataHolder.reinitHeaders;
 
 public class ProcessRepository {
     private Realm realm;
@@ -37,6 +38,20 @@ public class ProcessRepository {
         });
     }
 
+    public void deleteAll(){
+        // obtain the results of a query
+        final RealmResults<Process> results = realm.where(Process.class).findAll();
+        // All changes to data must happen in a transaction
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                // Delete all matches
+                results.deleteAllFromRealm();
+            }
+        }
+        );
+    }
+
     public void deleteCurrent(){
         RealmResults<Process> result = realm
                 .where(Process.class)
@@ -49,32 +64,34 @@ public class ProcessRepository {
             }
         });
     }
-
-    public void insertListFromJson(final String json){
-        realm.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                realm.createOrUpdateAllFromJson(Process.class, json);
-            }
-        }, new Realm.Transaction.OnSuccess() {
-            @Override
-            public void onSuccess() {
-                Log.i("REALM_TAG", json + " has successfully added to database");
-            }
-        }, new Realm.Transaction.OnError() {
-            @Override
-            public void onError(Throwable error) {
-                Log.e("REALM_TAG", "Error in adding processes to database");
-                Log.e("REALM_TAG", error.getMessage().toString());
-            }
-        });
-    }
+//
+//    public void insertListFromJson(final String json){
+//        realm.executeTransactionAsync(new Realm.Transaction() {
+//            @Override
+//            public void execute(Realm realm) {
+//                realm.createOrUpdateAllFromJson(Process.class, json);
+//            }
+//        }, new Realm.Transaction.OnSuccess() {
+//            @Override
+//            public void onSuccess() {
+//                Log.i("REALM_TAG", json + " has successfully added to database");
+//            }
+//        }, new Realm.Transaction.OnError() {
+//            @Override
+//            public void onError(Throwable error) {
+//                Log.e("REALM_TAG", "Error in adding processes to database");
+//                Log.e("REALM_TAG", error.getMessage().toString());
+//            }
+//        });
+//    }
+//
 
     public void insertList(final List<Process> processes){
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                realm.copyToRealmOrUpdate(processes);
+                //
+                realm.insertOrUpdate(processes);
             }
         }, new Realm.Transaction.OnSuccess() {
             @Override

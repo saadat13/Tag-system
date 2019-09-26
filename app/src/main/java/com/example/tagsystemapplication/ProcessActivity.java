@@ -1,12 +1,8 @@
 package com.example.tagsystemapplication;
 
-import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,23 +13,19 @@ import com.example.tagsystemapplication.Repositories.ProcessRepository;
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import io.realm.OrderedCollectionChangeSet;
 import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.tagsystemapplication.DataHolder.USER_RESPONSE;
 import static com.example.tagsystemapplication.DataHolder.isConnectedToInternet;
 import static com.example.tagsystemapplication.DataHolder.processes;
 
@@ -87,10 +79,16 @@ public class ProcessActivity extends AppCompatActivity {
                 public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
                     if (response.code() == 200) {
                         processes = response.body();
+                        Log.wtf("Tag:::", processes.size() + " ");
                         updateUI();
+                        //update database ...
                         ProcessRepository rep = new ProcessRepository(); // insert processes into database
+                        rep.deleteAll(); // delete old records
                         rep.insertList(processes);
                         rep.close();
+                    }else if(response.code() == 401){
+                        DataHolder.reinitHeaders(ProcessActivity.this);
+                        Toast.makeText(ProcessActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
                     } else {
                         Log.e("Response:", "Response is not successful!");
                         onProcessLoadError();
@@ -114,7 +112,7 @@ public class ProcessActivity extends AppCompatActivity {
                     // Called on every update.
                     // load processes from database
                     if (!results.isEmpty()) {
-                        //Toast.makeText(observer, "loading from db...", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "loading from db...", Toast.LENGTH_SHORT).show();
                         processes = realm.copyFromRealm(results);
                         updateUI();
                         //realm.close();
@@ -130,6 +128,7 @@ public class ProcessActivity extends AppCompatActivity {
 
     private void onProcessLoadError() {
         tv_load_error.setVisibility(View.VISIBLE);
+        rv.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(false);
     }
 
@@ -142,7 +141,7 @@ public class ProcessActivity extends AppCompatActivity {
 
     public void updateUI() {
         swipeRefreshLayout.setRefreshing(false);
-        setupRecycler();
         rv.setVisibility(View.VISIBLE);
+        setupRecycler();
     }
 }

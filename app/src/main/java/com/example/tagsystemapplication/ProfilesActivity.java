@@ -1,11 +1,9 @@
 package com.example.tagsystemapplication;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,9 +12,11 @@ import com.example.tagsystemapplication.Fragments.ItemFragment;
 import com.example.tagsystemapplication.Models.Content;
 import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.OutputTag;
+import com.example.tagsystemapplication.Models.Process;
 import com.example.tagsystemapplication.Models.Profile;
 import com.example.tagsystemapplication.Models.ProfilePackage;
 import com.example.tagsystemapplication.Models.Tag;
+import com.example.tagsystemapplication.Models.User;
 import com.example.tagsystemapplication.Repositories.ContentRepository;
 import com.example.tagsystemapplication.Repositories.ProcessRepository;
 import com.example.tagsystemapplication.Repositories.ProfilePackageRepository;
@@ -26,6 +26,7 @@ import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -33,11 +34,16 @@ import java.util.concurrent.TimeUnit;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
+import io.realm.OrderedRealmCollectionChangeListener;
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmList;
+import io.realm.RealmModel;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.tagsystemapplication.DataHolder.USER_RESPONSE;
 import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
@@ -55,6 +61,8 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     private Toolbar toolbar;
     private CountDownTimer timer;
     private long mTimeLeftInMillis = 0L;
+
+    private boolean hasSendError = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -223,18 +231,19 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                         nextProfile.performClick();
                         previousProfile.performClick();
                     }
-                    if(profiles.size() == 0) {
-                        //TODO check if request of profile has next -> if has next then next profile should be
-                        //TODO loaded from server and saved into database and profiles should be reinitialized else
-                        // TODO if has not next then user should be navigated to summary activity
-                        if(currentProfilePackage.hasNext()){
-                            ProfilePackageRepository ppr = new ProfilePackageRepository();
-                            ppr.delete(currentProfilePackage.getId());
-                            loadPackageProfile();
-                        }else {
-                            this.finish();
-                        }
-                    }
+//                    if(profiles.size() == 0) {
+//                        //TODO check if request of profile has next -> if has next then next profile should be
+//                        //TODO loaded from server and saved into database and profiles should be reinitialized else
+//                        // TODO if has not next then user should be navigated to summary activity
+//                        if(currentProfilePackage.hasNext()){
+//                            ProfilePackageRepository ppr = new ProfilePackageRepository();
+//                            ppr.delete(currentProfilePackage.getId());
+//                            loadPackageProfile();
+//                        }else {
+//                            if(!hasSendError)
+//                                this.finish();
+//                        }
+//                    }
                 }
                 break;
         }
@@ -264,6 +273,19 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 public void onResponse(Call<Output> call, Response<Output> response) {
                     if (response.isSuccessful()) {
                         Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
+                        if(profiles.size() == 0) {
+                            //TODO check if request of profile has next -> if has next then next profile should be
+                            //TODO loaded from server and saved into database and profiles should be reinitialized else
+                            // TODO if has not next then user should be navigated to summary activity
+                            if(currentProfilePackage.hasNext()){
+                                ProfilePackageRepository ppr = new ProfilePackageRepository();
+                                ppr.delete(currentProfilePackage.getId());
+                                loadPackageProfile();
+                            }else {
+                                if(!hasSendError)
+                                    ProfilesActivity.this.finish();
+                            }
+                        }
                     }else{
                         onSendingError(profile);
                     }
@@ -281,12 +303,14 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void onSendingError(Profile profile){
+        hasSendError = true;
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("connection error")
                 .setMessage("sending tags to server failed")
                 .setCancelable(false)
                 .setPositiveButton("Resend", (dialogInterface, i) -> {
                     sendTags(profile);
+                    hasSendError = false;
                     dialogInterface.dismiss();
                 });
         builder.create().show();
@@ -308,84 +332,126 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     }
 
     public void loadPackageProfile() {
-        if (processes.get(currentProcessIndex).getProfilePackages() != null) {
-            try{
-                // always one and only one package is in memory and database for a certain process
-                currentProfilePackage = processes.get(currentProcessIndex).getProfilePackages().get(0);
-                if(Long.valueOf(currentProfilePackage.getExpireDate()) < System.currentTimeMillis())
-                    DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
-            }catch (IndexOutOfBoundsException|NullPointerException e){
-                loadPackageFromServer();
-                Log.e("MyException:::", e.getMessage().toString());
-            }
-        } else {
+        if(isConnectedToInternet(this)){
             loadPackageFromServer();
+        }else{
+            // load from database
+            Log.i("DB_TAG:::", "loading from db...");
+            Realm realm = Realm.getDefaultInstance();
+//            RealmResults<ProfilePackage> p;
+            realm.where(ProfilePackage.class)
+                    .equalTo("processId", processes.get(currentProcessIndex).getId()).findFirstAsync().addChangeListener(realmModel -> {
+                if(realmModel!=null){
+                    ProfilePackage pp = (ProfilePackage) realmModel;
+                    currentProfilePackage = pp;
+                    DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
+                    updateUI();
+                }
+            });
+
         }
+
     }
 
     private void loadPackageFromServer() {
-        if(isConnectedToInternet(this)){
-            API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
-            Call<ProfilePackage> call = apiInterface.getPackageProfile(processes.get(currentProcessIndex).getId());
-            call.enqueue(new Callback<ProfilePackage>() {
-                @Override
-                public void onResponse(Call<ProfilePackage> call, Response<ProfilePackage> response) {
-                    if (response.code() == 200) {
-                        currentProfilePackage = response.body();
-                        if (currentProfilePackage != null) {
-                            DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
-                            updateUI();
-                            updateDatabase();
-                            Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
-                        }else {
-                            Log.e("Response:::", "null profiles loaded from response!");
-                            onProfileLoadError();
-                        }
-                    }else if(response.code() == 401){
-                        DataHolder.reinitHeaders(ProfilesActivity.this);
-                        Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
-                    }else if(response.code() == 404){
-                        Toast.makeText(ProfilesActivity.this, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
-                        new ProcessRepository().deleteCurrent();
-                        processes.remove(currentItemIndex);
-                        finish();
-                    } else {
-                        Log.i("Response:::", response.toString());
+        API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
+        Call<ProfilePackage> call = apiInterface.getPackageProfile(processes.get(currentProcessIndex).getId());
+        Log.wtf("ID:::", processes.get(currentProcessIndex).getId() + " ");
+        call.enqueue(new Callback<ProfilePackage>() {
+            @Override
+            public void onResponse(Call<ProfilePackage> call, Response<ProfilePackage> response) {
+                if (response.code() == 200) {
+                    currentProfilePackage = response.body();
+                    if (currentProfilePackage != null) {
+                        DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
+                        updateUI();
+                        updateDatabase();
+                        Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
+                    }else {
+                        Log.e("Response:::", "null profiles loaded from response!");
                         onProfileLoadError();
                     }
-                }
-
-                @Override
-                public void onFailure(Call<ProfilePackage> call, Throwable t) {
-                    Log.e("Response:::", t.toString());
+                }else if(response.code() == 401){
+                    DataHolder.reinitHeaders(ProfilesActivity.this);
+                    Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
+                }else if(response.code() == 404){
+                    Toast.makeText(ProfilesActivity.this, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
+                    new ProcessRepository().deleteCurrent();
+                    processes.remove(currentItemIndex);
+                    finish();
+                } else {
+                    Log.i("Response:::", response.toString());
                     onProfileLoadError();
                 }
-            });
-        }else{
-            onProfileLoadError();
-        }
+            }
+
+            @Override
+            public void onFailure(Call<ProfilePackage> call, Throwable t) {
+                Log.e("Response:::", t.toString());
+                onProfileLoadError();
+            }
+        });
+
     }
 
     public static void updateDatabase(){
-        // save profiles in database
-        ProfilePackageRepository ppr = new ProfilePackageRepository();
-        ProfileRepository pr = new ProfileRepository();
-        TagRepository tr = new TagRepository();
-        ContentRepository cr = new ContentRepository();
-        for (Profile p : currentProfilePackage.getProfiles()) {
-            tr.insertList(p.getTags());
-            cr.insertList(p.getContents());
+        try(Realm realm = Realm.getDefaultInstance()){
+            realm.executeTransactionAsync(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    List<Profile> profiles = currentProfilePackage.getProfiles();
+                    for(Profile p : profiles){
+                        // add contents to realm
+                        RealmList<Content> realmContents = new RealmList<>();
+                        realmContents.addAll(p.getContents());
+                        p.setRealmContents(realmContents);
+
+                        // add tags to realm
+                        RealmList<Tag> realmTags = new RealmList<>();
+                        realmTags.addAll(p.getTags());
+                        p.setRealmTags(realmTags);
+
+                        //add users to Tags
+                        for(Tag t : p.getTags()){
+                            RealmList<User> realmUsers = new RealmList<>();
+                            realmUsers.addAll(t.getUsers());
+                            t.setRealmUsers(realmUsers);
+                        }
+                    }
+
+                    // add realm profiles
+                    RealmList<Profile> realmProfiles = new RealmList<>();
+                    realmProfiles.addAll(profiles);
+                    currentProfilePackage.setRealmProfiles(realmProfiles);
+
+                    // add realm profile packages
+                    RealmList<ProfilePackage> realmProfilePackages = new RealmList<>();
+                    realmProfilePackages.add(currentProfilePackage);
+                    processes.get(currentProcessIndex).setRealmProfilePackages(realmProfilePackages);
+
+                    realm.insertOrUpdate(processes.get(currentProcessIndex));
+                }
+            });
         }
-        pr.insertList(DataHolder.profiles);
-        ppr.insert(currentProfilePackage);
-        //update processes
-        ProcessRepository prc = new ProcessRepository();
-        prc.insertList(DataHolder.processes);
-        Log.i("MSG:::", "Database has updated successfully!");
-        ppr.close();
-        pr.close();
-        tr.close();
-        cr.close();
-        prc.close();
+//        // save profiles in database
+//        ProfilePackageRepository ppr = new ProfilePackageRepository();
+//        ProfileRepository pr = new ProfileRepository();
+//        TagRepository tr = new TagRepository();
+//        ContentRepository cr = new ContentRepository();
+//        for (Profile p : currentProfilePackage.getProfiles()) {
+//            tr.insertList(p.getTags());
+//            cr.insertList(p.getContents());
+//        }
+//        pr.insertList(DataHolder.profiles);
+//        ppr.insert(currentProfilePackage);
+//        //update processes
+//        ProcessRepository prc = new ProcessRepository();
+//        prc.insertList(DataHolder.processes);
+//        Log.i("MSG:::", "Database has updated successfully!");
+//        ppr.close();
+//        pr.close();
+//        tr.close();
+//        cr.close();
+//        prc.close();
     }
 }

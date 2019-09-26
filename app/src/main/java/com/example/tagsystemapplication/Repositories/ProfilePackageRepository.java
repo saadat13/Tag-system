@@ -23,7 +23,7 @@ public class ProfilePackageRepository {
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
             public void execute(Realm realm) {
-                realm.copyToRealmOrUpdate(ppackage);
+                realm.insertOrUpdate(ppackage);
             }
         }, new Realm.Transaction.OnSuccess() {
             @Override
@@ -40,11 +40,6 @@ public class ProfilePackageRepository {
         });
     }
 
-    public ArrayList<ProfilePackage> find(int processId){
-        Process process = realm.where(Process.class)
-                .equalTo("id", processId).findFirst();
-        return new ArrayList<>(realm.copyFromRealm(process.getProfilePackages()));
-    }
 
     public void close(){
         if(realm == null) return;

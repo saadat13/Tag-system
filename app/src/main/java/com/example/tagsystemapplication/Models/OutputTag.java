@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-public class OutputTag implements Serializable {
+public class OutputTag {
 
     @SerializedName("tag_title")
     @Expose

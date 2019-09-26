@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import io.realm.RealmRecyclerViewAdapter;
 import io.realm.RealmResults;
 
+import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
+
 public class ProcessRecyclerAdapter2 extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<Process> processObjects;
@@ -75,13 +77,10 @@ public class ProcessRecyclerAdapter2 extends RecyclerView.Adapter<RecyclerView.V
             parent.setTag(this);
             title.setText(process.getTitle());
             details.setText(process.getOtherDetails());
-            parent.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent intent = new Intent(activity, ProfilesActivity.class);
-                    intent.putExtra("processIndex", index);
-                    activity.startActivity(intent);
-                }
+            parent.setOnClickListener(view -> {
+                currentProcessIndex = processObjects.indexOf(process);
+                Intent intent = new Intent(activity, ProfilesActivity.class);
+                activity.startActivity(intent);
             });
         }
     }
