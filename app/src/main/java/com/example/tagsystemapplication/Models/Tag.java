@@ -2,9 +2,7 @@ package com.example.tagsystemapplication.Models;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import androidx.annotation.NonNull;

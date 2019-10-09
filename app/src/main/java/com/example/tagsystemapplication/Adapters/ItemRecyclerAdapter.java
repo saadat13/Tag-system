@@ -1,10 +1,19 @@
 package com.example.tagsystemapplication.Adapters;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -67,12 +76,13 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             hashtags = itemView.findViewById(R.id.hashtags);
         }
 
+        @SuppressLint("ClickableViewAccessibility")
         void onBind(Profile profile) {
             this.profile = profile;
             parent.setTag(this);
             parent.setOnClickListener(this);
-            boolean isMultiContent = profile.getContents().size() > 1;
             Content firstObject = profile.getContents().get(0);
+            boolean isMultiContent = profile.getContents().size() > 1;
             if(isMultiContent)
                 title.setText("multi content");
             else
@@ -87,6 +97,8 @@ public class ItemRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             loadImage(firstObject);
         }
+
+
 
         private void loadImage(Content mediaObject) {
             DrawableCrossFadeFactory factory =

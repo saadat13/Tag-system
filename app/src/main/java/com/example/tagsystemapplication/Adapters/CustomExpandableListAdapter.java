@@ -59,6 +59,7 @@ public class CustomExpandableListAdapter extends BaseExpandableListAdapter {
         Tag tag = ((Tag) getChild(groupPosition, childPosition));
         String expandedListText = tag.getTitle();
         String percent = tag.getPercent() + "%";
+        Log.wtf("TAG:::", percent);
         boolean isChecked = tag.isChecked();
         TextView expandedListTextView = rootView.findViewById(R.id.tag_name);
         CheckBox checkBox = rootView.findViewById(R.id.checkBox);

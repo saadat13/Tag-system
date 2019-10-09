@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TagSystemApplication</string>
+    <string name="app_name">TSA</string>
     <!-- Strings related to login -->
     <string name="prompt_email">User name</string>
     <string name="prompt_password">Password</string>
@@ -19,4 +19,6 @@
     <string name="title_activity_video_play">VideoPlayActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="navigation_drawer_open">v1</string>
+    <string name="navigation_drawer_close">v2</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.tagsystemapplication;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
@@ -16,6 +17,7 @@ import com.example.tagsystemapplication.WebService.API_Interface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,14 +57,18 @@ public class DataHolder{
 
 
 
-    public static void reinitHeaders(Context context){
+    public static void reinitHeaders(Context context , String refreshToken){
         API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-        Call<AccessToken> call = apiInterface.refreshToken(USER_RESPONSE.getRefreshToken());
-        call.enqueue(new Callback<AccessToken>() {
+        Call<LoginResponse> call = apiInterface.refreshToken(refreshToken);
+        call.enqueue(new Callback<LoginResponse>() {
             @Override
-            public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if(response.isSuccessful()){
                     USER_RESPONSE.setAccessToken(response.body().getAccessToken());
+                    USER_RESPONSE.setRefreshToken(response.body().getRefreshToken());
+                    SharedPreferences pref = context.getSharedPreferences("info", Context.MODE_PRIVATE);
+                    pref.edit().putString("refresh", USER_RESPONSE.getRefreshToken()).apply();
+                    pref.edit().putString("access", USER_RESPONSE.getAccessToken()).apply();
                     Log.wtf("TAG:::", "refresh token obtained successfully");
                 }else if(response.code() == 401){ // refresh token is expired
                     //reSignIn(context);
@@ -73,37 +79,38 @@ public class DataHolder{
             }
 
             @Override
-            public void onFailure(Call<AccessToken> call, Throwable t) {
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
                 Log.e("Response:::", "");
                 t.printStackTrace();
             }
         });
     }
 
-    private static void reSignIn(Context context) {
-        if(!isConnectedToInternet(context)) return;
 
-        HashMap<String, String> userpass = new HashMap<>();
-        userpass.put("username", USER_SAVED_DATA[0]);
-        userpass.put("password", USER_SAVED_DATA[1]);
-        API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
-        Call<LoginResponse> call = apiInterface.getToken(userpass);
-        call.enqueue(new Callback<LoginResponse>() {
-            @Override
-            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                if(response.isSuccessful()){
-                    DataHolder.USER_RESPONSE = response.body();
-                }else{
-                    Log.e("Response:::", response.message().toString());
-                }
-            }
-            @Override
-            public void onFailure(Call<LoginResponse> call, Throwable t) {
-                Log.e("Response:::", "resignIn failed! ");
-                t.printStackTrace();
-            }
-        });
-
-    }
+//    private static void reSignIn(Context context) {
+//        if(!isConnectedToInternet(context)) return;
+//
+//        HashMap<String, String> userpass = new HashMap<>();
+//        userpass.put("username", USER_SAVED_DATA[0]);
+//        userpass.put("password", USER_SAVED_DATA[1]);
+//        API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
+//        Call<LoginResponse> call = apiInterface.getToken(userpass);
+//        call.enqueue(new Callback<LoginResponse>() {
+//            @Override
+//            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+//                if(response.isSuccessful()){
+//                    DataHolder.USER_RESPONSE = response.body();
+//                }else{
+//                    Log.e("Response:::", response.message().toString());
+//                }
+//            }
+//            @Override
+//            public void onFailure(Call<LoginResponse> call, Throwable t) {
+//                Log.e("Response:::", "resignIn failed! ");
+//                t.printStackTrace();
+//            }
+//        });
+//
+//    }
 
 }

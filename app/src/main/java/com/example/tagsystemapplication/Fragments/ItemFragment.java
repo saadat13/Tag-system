@@ -1,6 +1,10 @@
 package com.example.tagsystemapplication.Fragments;
 
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -9,15 +13,21 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
 import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
 import com.example.tagsystemapplication.DataHolder;
@@ -117,6 +127,7 @@ public class ItemFragment extends Fragment {
         return rootView;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -130,15 +141,41 @@ public class ItemFragment extends Fragment {
         listDataChild.put(listDataHeader.get(0), profile.getTags());
         adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
         tagList.setAdapter(adapter);
-        if(curObject.getType().equals("image"))
+        if(curObject.getType().equals("image")) {
             loadImage(imageView);
-        else if(curObject.getType().equals("text")){
+            imageView.setOnTouchListener((view1, motionEvent) -> {
+                showImage();
+                return false;
+            });
+        } else if(curObject.getType().equals("text")){
             content.setText(curObject.getUrl());
         }
 
     }
 
-    private void loadImage(View view) {
+    public void showImage(){
+        Dialog builder = new Dialog(getContext());
+        View v = builder.getLayoutInflater().inflate(R.layout.layout_full_screen_image, null);
+        builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        builder.getWindow().setBackgroundDrawable(
+                new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        builder.setContentView(v);
+        ImageView imageView = v.findViewById(R.id.img);
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        int width = (int)(0.8 * display.getWidth());
+        int height = (int)(0.8 * display.getHeight());
+        Glide.with(getContext())
+                .asDrawable()
+                .apply(new RequestOptions().override(width, height))
+                .load(curObject.getUrl())
+                .placeholder(R.drawable.ic_not_loaded_img)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(imageView);
+        builder.create();
+        builder.show();
+    }
+
+    private void loadImage(ImageView view) {
         DrawableCrossFadeFactory factory =
                 new DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build();
 
@@ -148,7 +185,7 @@ public class ItemFragment extends Fragment {
                 .load(curObject.getUrl())
                 .placeholder(R.drawable.ic_not_loaded_img)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(imageView);
+                .into(view);
     }
 
 

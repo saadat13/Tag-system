@@ -25,7 +25,7 @@ public interface API_Interface {
 
 
     @POST("accounts/token/refresh/")
-    Call<AccessToken> refreshToken(@Header("refresh: ") String refreshToken);
+    Call<LoginResponse> refreshToken(@Header("refresh: ") String refreshToken);
 
 
     @GET("api/processes/")

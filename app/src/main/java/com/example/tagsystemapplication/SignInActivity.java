@@ -28,7 +28,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     EditText et_user;
     EditText et_pass;
     MaterialButton btn_signin;
-    Switch off_switch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,15 +36,29 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         initView();
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        fill_fields();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fill_fields();
+    }
+
     private void initView() {
         et_user = findViewById(R.id.name);
         et_pass = findViewById(R.id.password);
         btn_signin = findViewById(R.id.sin);
-        off_switch = findViewById(R.id.off_switch);
-        off_switch.setOnClickListener(this);
         btn_signin.setOnClickListener(this);
 
-        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        fill_fields();
+    }
+
+    private void fill_fields() {
+        SharedPreferences pref = getSharedPreferences("info", MODE_PRIVATE);
         String username = pref.getString("username", "");
         String password = pref.getString("password", "");
         et_user.setText(username);
@@ -56,35 +69,24 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.sin) {
-            if(off_switch.isChecked()){
-                // navigate user to process activity
-                startActivity(new Intent(SignInActivity.this, ProcessActivity.class));
-            }else {
-                String user = et_user.getText().toString();
-                String pass = et_pass.getText().toString();
-                if (user.isEmpty()) {
-                    et_user.setError("please enter username");
-                    return;
-                } else if (pass.isEmpty()) {
-                    et_pass.setError("please enter password");
-                    return;
-                }
+            String user = et_user.getText().toString();
+            String pass = et_pass.getText().toString();
+            if (user.isEmpty()) {
+                et_user.setError("please enter username");
+                return;
+            } else if (pass.isEmpty()) {
+                et_pass.setError("please enter password");
+                return;
+            }
 
-                // attempt login to server
-                attemptSignIn(user, pass);
-            }
-        }else if(view.getId() == R.id.off_switch){
-            if(off_switch.isChecked()){
-                btn_signin.setText("Enter");
-            }else{
-                btn_signin.setText("Sign In");
-            }
+            // attempt login to server
+            attemptSignIn(user, pass);
         }
     }
 
     private void saveUserData(String username, String password){
         //first save user data in storage for next usages
-        SharedPreferences pref = getPreferences(MODE_PRIVATE);
+        SharedPreferences pref = getSharedPreferences("info", MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
         editor.putString("username", username);
         editor.putString("password", password);
@@ -118,6 +120,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                     saveUserData(username, password);
                     DataHolder.USER_SAVED_DATA = new String[]{username, password};
                     DataHolder.USER_RESPONSE = response.body();
+                    SharedPreferences pref = getSharedPreferences("info", MODE_PRIVATE);
+                    pref.edit().putString("refresh", DataHolder.USER_RESPONSE.getRefreshToken()).apply();
+                    pref.edit().putString("access", DataHolder.USER_RESPONSE.getAccessToken()).apply();
                     // navigate user to processes activity
                     startActivity(new Intent(SignInActivity.this, ProcessActivity.class));
                 }else{

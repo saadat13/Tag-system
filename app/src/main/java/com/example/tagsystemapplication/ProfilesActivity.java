@@ -1,5 +1,6 @@
 package com.example.tagsystemapplication;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -140,11 +141,13 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
                 tvTime.setText(timeLeftFormatted);
             }
+
             public void onFinish() {
-//                mTextField.setText("done!");
+                tvTime.setText("time's up!");
             }
         };
         timer.start();
+
     }
 
     private String getPageNumber() {
@@ -219,31 +222,15 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                     if (cur == numOfContents - 1) {
                         previousProfile.performClick();
                         sendTags(current);
-                        profiles.remove(cur);
                     } else if (cur == 0) {
                         nextProfile.performClick();
                         sendTags(current);
-                        profiles.remove(cur);
                         previousProfile.performClick();
                     } else /*if (cur > 0 && cur < numOfContents)*/ {
                         sendTags(current);
-                        profiles.remove(cur);
                         nextProfile.performClick();
                         previousProfile.performClick();
                     }
-//                    if(profiles.size() == 0) {
-//                        //TODO check if request of profile has next -> if has next then next profile should be
-//                        //TODO loaded from server and saved into database and profiles should be reinitialized else
-//                        // TODO if has not next then user should be navigated to summary activity
-//                        if(currentProfilePackage.hasNext()){
-//                            ProfilePackageRepository ppr = new ProfilePackageRepository();
-//                            ppr.delete(currentProfilePackage.getId());
-//                            loadPackageProfile();
-//                        }else {
-//                            if(!hasSendError)
-//                                this.finish();
-//                        }
-//                    }
                 }
                 break;
         }
@@ -266,13 +253,14 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
 
             Output output = new Output(currentProfilePackage.getId(), processes.get(currentProcessIndex).getId(), profile.getId(), tags);
             //sending to server ...
-            API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
+            API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
             Call<Output> call = apiInterface.sendOutput(output);
             call.enqueue(new Callback<Output>() {
                 @Override
                 public void onResponse(Call<Output> call, Response<Output> response) {
                     if (response.isSuccessful()) {
                         Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
+                        profiles.remove(profile);
                         if(profiles.size() == 0) {
                             //TODO check if request of profile has next -> if has next then next profile should be
                             //TODO loaded from server and saved into database and profiles should be reinitialized else
@@ -307,7 +295,6 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("connection error")
                 .setMessage("sending tags to server failed")
-                .setCancelable(false)
                 .setPositiveButton("Resend", (dialogInterface, i) -> {
                     sendTags(profile);
                     hasSendError = false;
@@ -344,7 +331,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 if(realmModel!=null){
                     ProfilePackage pp = (ProfilePackage) realmModel;
                     currentProfilePackage = pp;
-                    DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
+                    DataHolder.profiles = currentProfilePackage.getProfiles();
                     updateUI();
                 }
             });
@@ -354,7 +341,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void loadPackageFromServer() {
-        API_Interface apiInterface = API_Client.getAuthorizedClient().create(API_Interface.class);
+        API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
         Call<ProfilePackage> call = apiInterface.getPackageProfile(processes.get(currentProcessIndex).getId());
         Log.wtf("ID:::", processes.get(currentProcessIndex).getId() + " ");
         call.enqueue(new Callback<ProfilePackage>() {
@@ -363,21 +350,33 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 if (response.code() == 200) {
                     currentProfilePackage = response.body();
                     if (currentProfilePackage != null) {
-                        DataHolder.profiles.addAll(currentProfilePackage.getProfiles());
-                        updateUI();
-                        updateDatabase();
-                        Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
+                        if(!currentProfilePackage.getProfiles().isEmpty()) {
+                            DataHolder.profiles = currentProfilePackage.getProfiles();
+                            updateUI();
+                            updateDatabase();
+                            Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(ProfilesActivity.this, "there is no profile in this process exiting...", Toast.LENGTH_SHORT).show();
+                            ProfilesActivity.this.finish();
+                        }
                     }else {
                         Log.e("Response:::", "null profiles loaded from response!");
                         onProfileLoadError();
                     }
                 }else if(response.code() == 401){
-                    DataHolder.reinitHeaders(ProfilesActivity.this);
-                    Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
+                    String refreshToken = getPreferences(MODE_PRIVATE).getString("refresh", "");
+                    if(!refreshToken.isEmpty()) {
+                        DataHolder.reinitHeaders(ProfilesActivity.this, refreshToken);
+                        Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
+                    }else{
+                        startActivity(new Intent(ProfilesActivity.this, SignInActivity.class));
+                        ProfilesActivity.this.finish();
+                    }
                 }else if(response.code() == 404){
                     Toast.makeText(ProfilesActivity.this, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
                     new ProcessRepository().deleteCurrent();
-                    processes.remove(currentItemIndex);
+                    processes.remove(currentProcessIndex);
+                    Log.wtf("Prob:::", currentItemIndex + " ");
                     finish();
                 } else {
                     Log.i("Response:::", response.toString());
@@ -433,25 +432,5 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 }
             });
         }
-//        // save profiles in database
-//        ProfilePackageRepository ppr = new ProfilePackageRepository();
-//        ProfileRepository pr = new ProfileRepository();
-//        TagRepository tr = new TagRepository();
-//        ContentRepository cr = new ContentRepository();
-//        for (Profile p : currentProfilePackage.getProfiles()) {
-//            tr.insertList(p.getTags());
-//            cr.insertList(p.getContents());
-//        }
-//        pr.insertList(DataHolder.profiles);
-//        ppr.insert(currentProfilePackage);
-//        //update processes
-//        ProcessRepository prc = new ProcessRepository();
-//        prc.insertList(DataHolder.processes);
-//        Log.i("MSG:::", "Database has updated successfully!");
-//        ppr.close();
-//        pr.close();
-//        tr.close();
-//        cr.close();
-//        prc.close();
     }
 }
