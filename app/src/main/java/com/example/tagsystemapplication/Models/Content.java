@@ -17,10 +17,13 @@ public class Content extends RealmObject implements Parcelable {
     @PrimaryKey
     @SerializedName("id")
     private int id;
+
     @SerializedName("url")
     private String url;
+
     @SerializedName("title")
     private String title;
+
     @SerializedName("type")
     private String type;
 
@@ -78,6 +81,10 @@ public class Content extends RealmObject implements Parcelable {
         return title;
     }
 
+    public RealmResults<Profile> getFromRealmContents() {
+        return fromRealmContents;
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -85,7 +92,7 @@ public class Content extends RealmObject implements Parcelable {
     @NonNull
     @Override
     public String toString() {
-        return String.format("content %d, title: %s", id, title);
+        return String.format("content %d, title: %s", title);
     }
 
     @Override

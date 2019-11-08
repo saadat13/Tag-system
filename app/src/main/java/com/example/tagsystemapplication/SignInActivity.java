@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,15 +11,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Switch;
-
 import com.example.tagsystemapplication.Models.LoginResponse;
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 import com.google.android.material.button.MaterialButton;
-
 import java.util.HashMap;
-
 import static com.example.tagsystemapplication.DataHolder.isConnectedToInternet;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
@@ -39,13 +34,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        fill_fields();
+        fillFields();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        fill_fields();
+        fillFields();
     }
 
     private void initView() {
@@ -54,17 +49,16 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         btn_signin = findViewById(R.id.sin);
         btn_signin.setOnClickListener(this);
 
-        fill_fields();
+        fillFields();
     }
 
-    private void fill_fields() {
+    private void fillFields() {
         SharedPreferences pref = getSharedPreferences("info", MODE_PRIVATE);
         String username = pref.getString("username", "");
         String password = pref.getString("password", "");
         et_user.setText(username);
         et_pass.setText(password);
     }
-
 
     @Override
     public void onClick(View view) {
@@ -111,7 +105,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         userpass.put("username", username);
         userpass.put("password", password);
 
-        API_Interface apiInterface = API_Client.getClient().create(API_Interface.class);
+        API_Interface apiInterface = API_Client.getClient(this).create(API_Interface.class);
         Call<LoginResponse> call = apiInterface.getToken(userpass);
         call.enqueue(new Callback<LoginResponse>() {
             @Override

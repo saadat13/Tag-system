@@ -3,7 +3,6 @@ package com.example.tagsystemapplication.Fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,25 +14,17 @@ import androidx.fragment.app.Fragment;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ExpandableListView;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory;
-import com.example.tagsystemapplication.Adapters.CustomExpandableListAdapter;
-import com.example.tagsystemapplication.DataHolder;
 import com.example.tagsystemapplication.Models.Content;
-import com.example.tagsystemapplication.Models.Profile;
-import com.example.tagsystemapplication.Models.Tag;
 import com.example.tagsystemapplication.R;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -49,14 +40,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.ms.square.android.expandabletextview.ExpandableTextView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import static com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions.withCrossFade;
-import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
-import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
-import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
 
 public class ItemFragment extends Fragment {
 
@@ -68,12 +52,6 @@ public class ItemFragment extends Fragment {
 
     private ExoPlayer player;
     private PlayerView videoView;
-    private ExpandableListView tagList;
-    private CustomExpandableListAdapter adapter;
-
-
-    private List<String> listDataHeader = new ArrayList<>();
-    private HashMap<String, List<Tag>> listDataChild = new HashMap<>();
 
 
     private long playbackPosition;
@@ -89,7 +67,6 @@ public class ItemFragment extends Fragment {
            curObject = getArguments().getParcelable("curObject");
         }
     }
-
     public static ItemFragment newInstance(Content curObject) {
         Bundle args = new Bundle();
         args.putParcelable("curObject", curObject);
@@ -97,17 +74,11 @@ public class ItemFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
-
-
-    //TODO this method should be implemented
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable("curObject", curObject);
     }
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -123,24 +94,15 @@ public class ItemFragment extends Fragment {
             videoView = rootView.findViewById(R.id.player);
         }
         title = rootView.findViewById(R.id.tvTitle);
-        tagList = rootView.findViewById(R.id.tag_list);
+//        tagList = rootView.findViewById(R.id.tag_list);
         return rootView;
     }
-
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Profile profile = DataHolder.profiles.get(currentProfileIndex);
         title.setText(curObject.getTitle());
-        ViewGroup.LayoutParams params = tagList.getLayoutParams();
-        params.height += profile.getTags().size() * 30;
-        tagList.setLayoutParams(params);
-        tagList.requestLayout();
-        listDataHeader.add("Select Tag(s):");
-        listDataChild.put(listDataHeader.get(0), profile.getTags());
-        adapter = new CustomExpandableListAdapter(getContext(), listDataHeader, listDataChild);
-        tagList.setAdapter(adapter);
+
         if(curObject.getType().equals("image")) {
             loadImage(imageView);
             imageView.setOnTouchListener((view1, motionEvent) -> {
@@ -152,7 +114,6 @@ public class ItemFragment extends Fragment {
         }
 
     }
-
     public void showImage(){
         Dialog builder = new Dialog(getContext());
         View v = builder.getLayoutInflater().inflate(R.layout.layout_full_screen_image, null);
@@ -174,7 +135,6 @@ public class ItemFragment extends Fragment {
         builder.create();
         builder.show();
     }
-
     private void loadImage(ImageView view) {
         DrawableCrossFadeFactory factory =
                 new DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build();
@@ -187,8 +147,6 @@ public class ItemFragment extends Fragment {
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(view);
     }
-
-
     private void initializePlayer() {
         player = ExoPlayerFactory.newSimpleInstance(getContext());
         videoView.setPlayer(player);
@@ -198,20 +156,17 @@ public class ItemFragment extends Fragment {
         MediaSource mediaSource = buildMediaSource(uri, "");
         player.prepare(mediaSource);
     }
-
     @Override
     public void onResume() {
         super.onResume();
         if(videoView != null)
             initializePlayer();
     }
-
     @Override
     public void onPause() {
         super.onPause();
         releasePlayer();
     }
-
     private MediaSource buildMediaSource(Uri uri, String overrideExtension) {
         int type = TextUtils.isEmpty(overrideExtension) ? Util.inferContentType(uri)
                 : Util.inferContentType("." + overrideExtension);
@@ -243,7 +198,6 @@ public class ItemFragment extends Fragment {
             }
         }
     }
-
     private void releasePlayer() {
         if (player != null) {
             playbackPosition = player.getCurrentPosition();

@@ -2,45 +2,35 @@ package com.example.tagsystemapplication;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.tagsystemapplication.Adapters.MyArrayAdapter;
 import com.example.tagsystemapplication.Fragments.ItemFragment;
 import com.example.tagsystemapplication.Models.Content;
+import com.example.tagsystemapplication.Models.DB;
 import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.OutputTag;
 import com.example.tagsystemapplication.Models.Process;
 import com.example.tagsystemapplication.Models.Profile;
-import com.example.tagsystemapplication.Models.ProfilePackage;
 import com.example.tagsystemapplication.Models.Tag;
-import com.example.tagsystemapplication.Models.User;
-import com.example.tagsystemapplication.Repositories.ContentRepository;
-import com.example.tagsystemapplication.Repositories.ProcessRepository;
-import com.example.tagsystemapplication.Repositories.ProfilePackageRepository;
-import com.example.tagsystemapplication.Repositories.ProfileRepository;
-import com.example.tagsystemapplication.Repositories.TagRepository;
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
-import io.realm.OrderedRealmCollectionChangeListener;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmList;
-import io.realm.RealmModel;
-import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,20 +38,27 @@ import retrofit2.Response;
 import static com.example.tagsystemapplication.DataHolder.currentItemIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProcessIndex;
 import static com.example.tagsystemapplication.DataHolder.currentProfileIndex;
-import static com.example.tagsystemapplication.DataHolder.currentProfilePackage;
 import static com.example.tagsystemapplication.DataHolder.isConnectedToInternet;
+import static com.example.tagsystemapplication.DataHolder.showingProfiles;
+import static com.example.tagsystemapplication.DataHolder.taggedProfiles;
+import static com.example.tagsystemapplication.DataHolder.untaggedProfiles;
 import static com.example.tagsystemapplication.DataHolder.processes;
 
 
 public class ProfilesActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageButton nextProfile, previousProfile, firstProfile, lastProfile, ok, nextItem, previousItem, firstItem, lastItem;
-    private TextView pageNumber, totalPages, tvTime;
+    private ImageButton nextProfile, previousProfile,
+            firstProfile, lastProfile, ok, nextItem,
+            previousItem, firstItem, lastItem;
+    private TextView total, profileNumber;
     private FragmentManager fragmentManager;
-    private List<Profile> profiles;
     private Toolbar toolbar;
-    private CountDownTimer timer;
-    private long mTimeLeftInMillis = 0L;
+    private CheckBox tagBox;
+
+    private ListView tagList;
+    private MyArrayAdapter adapter;
+    private List<Profile> backupProfiles;
+
 
     private boolean hasSendError = false;
 
@@ -69,13 +66,13 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profiles);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         fragmentManager = getSupportFragmentManager();
         if(savedInstanceState!=null){
             updateUI();
         }else {
-            loadPackageProfile();
+            loadProfiles();
         }
     }
 
@@ -85,9 +82,8 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
     }
 
     public void updateUI(){
-        profiles = DataHolder.profiles;
-        if (profiles != null) {
-            if (!profiles.isEmpty()) {
+        if (untaggedProfiles != null) {
+            if (!untaggedProfiles.isEmpty()) {
                 initView();
                 currentItemIndex = -1;
                 nextItem.performClick();
@@ -96,17 +92,28 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 finish();
             }
         }else {
-            Toast.makeText(ProfilesActivity.this, "error in loading profiles", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ProfilesActivity.this, "error in loading untaggedProfiles", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
 
+
+    private void updateProfilesTags(){
+        Process curP = processes.get(currentProcessIndex);
+        for(Profile p : untaggedProfiles){
+            List<Tag> t = Tag.cloneList(curP.getTags());
+            p.setTags(t);
+        }
+    }
+
     private void initView() {
-        pageNumber = toolbar.findViewById(R.id.toolbar_title);
-        totalPages = toolbar.findViewById(R.id.total_pages);
-        tvTime     = toolbar.findViewById(R.id.timer);
-        pageNumber.setText(getPageNumber());
-        totalPages.append(String.valueOf(profiles.size()));
+
+        total = toolbar.findViewById(R.id.toolbar_title);
+        profileNumber = toolbar.findViewById(R.id.p_number);
+        tagBox = toolbar.findViewById(R.id.chk_tag_state);
+
+        total.setText(getTotal());
+        profileNumber.setText(String.valueOf(currentProfileIndex+1));
 
         nextItem = findViewById(R.id.next_item);
         previousItem = findViewById(R.id.previous_item);
@@ -119,6 +126,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         lastProfile = findViewById(R.id.last_profile);
         ok = findViewById(R.id.ok);
 
+
         nextItem.setOnClickListener(this);
         previousItem.setOnClickListener(this);
         firstItem.setOnClickListener(this);
@@ -129,41 +137,31 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         firstProfile.setOnClickListener(this);
         lastProfile.setOnClickListener(this);
         ok.setOnClickListener(this);
+        tagList = findViewById(R.id.tag_list);
 
-        long remainingTimeMilis = Long.valueOf(currentProfilePackage.getExpireDate()) - System.currentTimeMillis();
-        mTimeLeftInMillis = remainingTimeMilis;
-        timer = new CountDownTimer(remainingTimeMilis, 1) {
-            public void onTick(long millisUntilFinished) {
-                long hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished);
-                long minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % TimeUnit.HOURS.toMinutes(1);
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % TimeUnit.MINUTES.toSeconds(1);
-
-                String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
-                tvTime.setText(timeLeftFormatted);
-            }
-
-            public void onFinish() {
-                tvTime.setText("time's up!");
-            }
-        };
-        timer.start();
-
+        setupListAdapter(untaggedProfiles.get(currentProfileIndex).getTags());
     }
 
-    private String getPageNumber() {
-        if(currentProfileIndex >= profiles.size()) return " ";
-        int itemsNumber = profiles.get(currentProfileIndex).getContents().size();
-        return String.format("(%d/%d)/%d", (currentItemIndex + 1), itemsNumber, currentProfileIndex + 1);
+    private void setupListAdapter(List<Tag> tags) {
+        adapter = new MyArrayAdapter(this, tags);
+        tagList.setAdapter(adapter);
+    }
+
+    private String getTotal() {
+        if(currentProfileIndex >= untaggedProfiles.size()) return " ";
+        int itemsNumber = untaggedProfiles.get(currentProfileIndex).getContents().size();
+        return String.format("(%d/%d)/%d", (currentItemIndex + 1), itemsNumber, untaggedProfiles.size());
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.next_profile:
-                if (currentProfileIndex + 1 < profiles.size()) {
+                if (currentProfileIndex + 1 < untaggedProfiles.size()) {
                     ++currentProfileIndex;
                     currentItemIndex = -1;
                     nextItem.performClick();
+                    setupListAdapter(untaggedProfiles.get(currentProfileIndex).getTags());
                 }
                 break;
             case R.id.previous_profile:
@@ -171,72 +169,86 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                     --currentProfileIndex;
                     currentItemIndex = -1;
                     nextItem.performClick();
+                    setupListAdapter(untaggedProfiles.get(currentProfileIndex).getTags());
                 }
                 break;
             case R.id.first_profile:
-                if (profiles.size() > 0) {
+                if (untaggedProfiles.size() > 0) {
                     currentProfileIndex = 0;
                     currentItemIndex = -1;
                     nextItem.performClick();
+                    setupListAdapter(untaggedProfiles.get(currentProfileIndex).getTags());
                 }
                 break;
             case R.id.last_profile:
-                if (profiles.size() > 0) {
-                    currentProfileIndex = profiles.size() - 1;
+                if (untaggedProfiles.size() > 0) {
+                    currentProfileIndex = untaggedProfiles.size() - 1;
                     currentItemIndex = -1;
                     nextItem.performClick();
+                    setupListAdapter(untaggedProfiles.get(currentProfileIndex).getTags());
                 }
                 break;
             case R.id.next_item:
-                if (currentItemIndex + 1 < profiles.get(currentProfileIndex).getContents().size()) {
-                    Content curItem = profiles.get(currentProfileIndex).getContents().get(++currentItemIndex);
+                if (currentItemIndex + 1 < untaggedProfiles.get(currentProfileIndex).getContents().size()) {
+                    Content curItem = untaggedProfiles.get(currentProfileIndex).getContents().get(++currentItemIndex);
                     selectDestination(curItem);
                 }
                 break;
             case R.id.previous_item:
                 if (currentItemIndex - 1 >= 0) {
-                    Content curItem = profiles.get(currentProfileIndex).getContents().get(--currentItemIndex);
+                    Content curItem = untaggedProfiles.get(currentProfileIndex).getContents().get(--currentItemIndex);
                     selectDestination(curItem);
                 }
                 break;
             case R.id.first_item:
-                if (profiles.get(currentProfileIndex).getContents().size() > 0) {
+                if (untaggedProfiles.get(currentProfileIndex).getContents().size() > 0) {
                     currentItemIndex = 0;
-                    Content firstItem = profiles.get(currentProfileIndex).getContents().get(currentItemIndex);
+                    Content firstItem = untaggedProfiles.get(currentProfileIndex).getContents().get(currentItemIndex);
                     selectDestination(firstItem);
                 }
                 break;
             case R.id.last_item:
-                int size = profiles.get(currentProfileIndex).getContents().size();
+                int size = untaggedProfiles.get(currentProfileIndex).getContents().size();
                 if (size > 0) {
                     currentItemIndex = size - 1;
-                    Content lastItem = profiles.get(currentProfileIndex).getContents().get(currentItemIndex);
+                    Content lastItem = untaggedProfiles.get(currentProfileIndex).getContents().get(currentItemIndex);
                     selectDestination(lastItem);
                 }
                 break;
             case R.id.ok:
-                int cur = currentProfileIndex;
-                int numOfContents = profiles.size();
-                if(numOfContents > 0) {
-                    Profile current = profiles.get(cur);
-                    if (cur == numOfContents - 1) {
-                        previousProfile.performClick();
-                        sendTags(current);
-                    } else if (cur == 0) {
-                        nextProfile.performClick();
-                        sendTags(current);
-                        previousProfile.performClick();
-                    } else /*if (cur > 0 && cur < numOfContents)*/ {
-                        sendTags(current);
-                        nextProfile.performClick();
-                        previousProfile.performClick();
-                    }
+                Profile currentProfile = untaggedProfiles.get(currentProfileIndex);
+                // first change state of current profile to tagged state if already not tagged
+                if(!currentProfile.isTagged()) {
+                    currentProfile.setTagged(true);
+                    taggedProfiles.add(currentProfile);
+                    //untaggedProfiles.remove(currentProfile);
                 }
+//                if(currentProfile.getRealmTags2() == null || currentProfile.getRealmTags2().size() == 0){
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                currentProfile.setRealmTags2(new RealmList<Tag>(currentProfile.getTags().toArray(new Tag[currentProfile.getTags().size()])));
+                realm.copyToRealmOrUpdate(currentProfile);
+                realm.commitTransaction();
+                realm.close();
+//                }
+//                new DBRepository<>(Profile.class).insert(currentProfile);
+
+                // second navigate to next or previous profile
+                if (currentProfileIndex + 1 < untaggedProfiles.size()) {
+                    nextProfile.performClick();
+                } else if (currentProfileIndex - 1 >= 0) {
+                    previousProfile.performClick();
+                }
+
                 break;
         }
-        pageNumber.setText(getPageNumber());
-        totalPages.setText("pages: " + String.valueOf(profiles.size()));
+
+        total.setText(getTotal());
+        profileNumber.setText("profile: " + String.valueOf(currentProfileIndex+1));
+        tagBox.setChecked(untaggedProfiles.get(currentProfileIndex).isTagged());
+
     }
+
 
     private void selectDestination(Content curItem) {
         fragmentManager
@@ -245,63 +257,62 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 .commit();
     }
 
-    private void sendTags(Profile profile){
-        if(isConnectedToInternet(this)) {
-            ArrayList<OutputTag> tags = new ArrayList<>();
-            for (Tag t : profile.getTags())
-                tags.add(new OutputTag(t.getTitle()));
-
-            Output output = new Output(currentProfilePackage.getId(), processes.get(currentProcessIndex).getId(), profile.getId(), tags);
-            //sending to server ...
-            API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
-            Call<Output> call = apiInterface.sendOutput(output);
-            call.enqueue(new Callback<Output>() {
-                @Override
-                public void onResponse(Call<Output> call, Response<Output> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
-                        profiles.remove(profile);
-                        if(profiles.size() == 0) {
-                            //TODO check if request of profile has next -> if has next then next profile should be
-                            //TODO loaded from server and saved into database and profiles should be reinitialized else
-                            // TODO if has not next then user should be navigated to summary activity
-                            if(currentProfilePackage.hasNext()){
-                                ProfilePackageRepository ppr = new ProfilePackageRepository();
-                                ppr.delete(currentProfilePackage.getId());
-                                loadPackageProfile();
-                            }else {
-                                if(!hasSendError)
-                                    ProfilesActivity.this.finish();
-                            }
-                        }
-                    }else{
-                        onSendingError(profile);
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<Output> call, Throwable t) {
-                    Log.e("Response:::", "");
-                    t.printStackTrace();
-                }
-            });
-        }else{
-            onSendingError(profile);
-        }
+    private void sendTags(Process process, Profile profile){
+//        if(isConnectedToInternet(this)) {
+//            ArrayList<OutputTag> tags = new ArrayList<>();
+//            for (Tag t : process.getTags()) {
+//                if(t.isChecked())
+//                    tags.add(new OutputTag(t.getTitle()));
+//            }
+//            Output output = new Output(process.getId(), profile.getId(), tags);
+//            //sending to server ...
+//            API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
+//            Call<Output> call = apiInterface.sendOutput(output);
+//            call.enqueue(new Callback<Output>() {
+//                @Override
+//                public void onResponse(Call<Output> call, Response<Output> response) {
+//                    if (response.isSuccessful()) {
+//                        Toast.makeText(ProfilesActivity.this, "tagged successfully", Toast.LENGTH_SHORT).show();
+//                        //untaggedProfiles.remove(profile);
+//                    }else if(response.code() == 401){
+//                        String refreshToken = getSharedPreferences("info",MODE_PRIVATE).getString("refresh", "");
+//                        if(!refreshToken.isEmpty()) {
+//                            DataHolder.reinitHeaders(ProfilesActivity.this, refreshToken);
+//                            Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
+//                        }else{
+//                            Log.wtf("TAG::::", "refresh token is empty");
+//                            startActivity(new Intent(ProfilesActivity.this, SignInActivity.class));
+//                            ProfilesActivity.this.finish();
+//                        }
+//                    }else{
+//                        onSendingError(process, profile);
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<Output> call, Throwable t) {
+//                    Log.e("Response:::", "");
+//                    t.printStackTrace();
+//                }
+//            });
+//        }else{
+//            onSendingError(process, profile);
+//        }
     }
 
-    private void onSendingError(Profile profile){
+    private void onSendingError(Process process, Profile profile){
         hasSendError = true;
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("connection error")
                 .setMessage("sending tags to server failed")
                 .setPositiveButton("Resend", (dialogInterface, i) -> {
-                    sendTags(profile);
+                    sendTags(process, profile);
                     hasSendError = false;
                     dialogInterface.dismiss();
                 });
         builder.create().show();
     }
+
 
     private void onProfileLoadError() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
@@ -309,7 +320,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                 .setMessage("connecting to server failed")
                 .setCancelable(false)
                 .setPositiveButton("Reload", (dialogInterface, i) -> {
-                    loadPackageProfile();
+                    loadProfiles();
                     dialogInterface.dismiss();
                 })
                 .setNegativeButton("Exit", (dialogInterface, i) -> {
@@ -318,40 +329,36 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
         builder.create().show();
     }
 
-    public void loadPackageProfile() {
-        if(isConnectedToInternet(this)){
-            loadPackageFromServer();
-        }else{
-            // load from database
-            Log.i("DB_TAG:::", "loading from db...");
-            Realm realm = Realm.getDefaultInstance();
-//            RealmResults<ProfilePackage> p;
-            realm.where(ProfilePackage.class)
-                    .equalTo("processId", processes.get(currentProcessIndex).getId()).findFirstAsync().addChangeListener(realmModel -> {
-                if(realmModel!=null){
-                    ProfilePackage pp = (ProfilePackage) realmModel;
-                    currentProfilePackage = pp;
-                    DataHolder.profiles = currentProfilePackage.getProfiles();
-                    updateUI();
-                }
-            });
-
+    public void loadProfiles() {
+        untaggedProfiles = processes.get(currentProcessIndex).getRealmProfiles();
+        if(untaggedProfiles == null || untaggedProfiles.size() == 0)
+            loadProfilesFromServer();
+        else{
+            //updateProfilesTags();
+            for(Profile p : untaggedProfiles){
+                p.setTags(Tag.cloneList(p.getRealmTags2()));
+                p.setContents(p.getRealmContents());
+            }
+            updateUI();
+            for(Profile p : untaggedProfiles){
+                if(p.isTagged())
+                    taggedProfiles.add(p);
+            }
         }
-
     }
 
-    private void loadPackageFromServer() {
+    private void loadProfilesFromServer() {
         API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
-        Call<ProfilePackage> call = apiInterface.getPackageProfile(processes.get(currentProcessIndex).getId());
-        Log.wtf("ID:::", processes.get(currentProcessIndex).getId() + " ");
-        call.enqueue(new Callback<ProfilePackage>() {
+        Call<List<Profile>> call = apiInterface.getProfiles(processes.get(currentProcessIndex).getId());
+        call.enqueue(new Callback<List<Profile>>() {
             @Override
-            public void onResponse(Call<ProfilePackage> call, Response<ProfilePackage> response) {
+            public void onResponse(Call<List<Profile>> call, Response<List<Profile>> response) {
                 if (response.code() == 200) {
-                    currentProfilePackage = response.body();
-                    if (currentProfilePackage != null) {
-                        if(!currentProfilePackage.getProfiles().isEmpty()) {
-                            DataHolder.profiles = currentProfilePackage.getProfiles();
+                    if (response.body() != null) {
+                        if(!response.body().isEmpty()) {
+//                            showingProfiles = response.body();
+                            untaggedProfiles = response.body();
+                            updateProfilesTags();
                             updateUI();
                             updateDatabase();
                             Toast.makeText(ProfilesActivity.this, "database is updating...", Toast.LENGTH_SHORT).show();
@@ -360,11 +367,11 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                             ProfilesActivity.this.finish();
                         }
                     }else {
-                        Log.e("Response:::", "null profiles loaded from response!");
+                        Log.e("Response:::", "null untaggedProfiles loaded from response!");
                         onProfileLoadError();
                     }
                 }else if(response.code() == 401){
-                    String refreshToken = getPreferences(MODE_PRIVATE).getString("refresh", "");
+                    String refreshToken = getSharedPreferences("info", MODE_PRIVATE).getString("refresh", "");
                     if(!refreshToken.isEmpty()) {
                         DataHolder.reinitHeaders(ProfilesActivity.this, refreshToken);
                         Toast.makeText(ProfilesActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
@@ -374,7 +381,7 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
                     }
                 }else if(response.code() == 404){
                     Toast.makeText(ProfilesActivity.this, "there is no package exists for this process, removing it...", Toast.LENGTH_LONG).show();
-                    new ProcessRepository().deleteCurrent();
+                    new DBRepository<>(Process.class).delete(processes.get(currentProcessIndex).getId());
                     processes.remove(currentProcessIndex);
                     Log.wtf("Prob:::", currentItemIndex + " ");
                     finish();
@@ -385,51 +392,65 @@ public class ProfilesActivity extends AppCompatActivity implements View.OnClickL
             }
 
             @Override
-            public void onFailure(Call<ProfilePackage> call, Throwable t) {
-                Log.e("Response:::", t.toString());
+            public void onFailure(Call<List<Profile>> call, Throwable t) {
                 onProfileLoadError();
             }
+
         });
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add("hide tagged profiles").setOnMenuItemClickListener((v)->{
+            List<Profile> onlyUntaggedProfiles = new ArrayList<>(untaggedProfiles);
+            onlyUntaggedProfiles.removeAll(taggedProfiles);
+            backupProfiles = untaggedProfiles;
+            untaggedProfiles = onlyUntaggedProfiles;
+
+            if(untaggedProfiles.size() != 0) {
+                currentProfileIndex = -1;
+                nextProfile.performClick();
+                // updating page number
+                total.setText(getTotal());
+                profileNumber.setText("profile: " + String.valueOf(currentProfileIndex + 1));
+            }else{
+                untaggedProfiles = backupProfiles;
+                backupProfiles = null;
+                Toast.makeText(this, "all of profile are tagged", Toast.LENGTH_LONG).show();
+            }
+            return true;
+        });
+        menu.add("show tagged profiles").setOnMenuItemClickListener((v)->{
+            if(backupProfiles != null) {
+                untaggedProfiles = backupProfiles;
+                backupProfiles = null;
+
+                currentProfileIndex = -1;
+                nextProfile.performClick();
+                total.setText(getTotal());
+                profileNumber.setText("profile: " + String.valueOf(currentProfileIndex+1));
+            }
+            return true;
+        });
+        return super.onCreateOptionsMenu(menu);
+    }
+
     public static void updateDatabase(){
         try(Realm realm = Realm.getDefaultInstance()){
-            realm.executeTransactionAsync(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    List<Profile> profiles = currentProfilePackage.getProfiles();
-                    for(Profile p : profiles){
-                        // add contents to realm
-                        RealmList<Content> realmContents = new RealmList<>();
-                        realmContents.addAll(p.getContents());
-                        p.setRealmContents(realmContents);
-
-                        // add tags to realm
-                        RealmList<Tag> realmTags = new RealmList<>();
-                        realmTags.addAll(p.getTags());
-                        p.setRealmTags(realmTags);
-
-                        //add users to Tags
-                        for(Tag t : p.getTags()){
-                            RealmList<User> realmUsers = new RealmList<>();
-                            realmUsers.addAll(t.getUsers());
-                            t.setRealmUsers(realmUsers);
-                        }
-                    }
-
-                    // add realm profiles
-                    RealmList<Profile> realmProfiles = new RealmList<>();
-                    realmProfiles.addAll(profiles);
-                    currentProfilePackage.setRealmProfiles(realmProfiles);
-
-                    // add realm profile packages
-                    RealmList<ProfilePackage> realmProfilePackages = new RealmList<>();
-                    realmProfilePackages.add(currentProfilePackage);
-                    processes.get(currentProcessIndex).setRealmProfilePackages(realmProfilePackages);
-
-                    realm.insertOrUpdate(processes.get(currentProcessIndex));
+            realm.executeTransactionAsync(realm1 -> {
+                Process currentProcess = processes.get(currentProcessIndex);
+                // add realm profiles
+                //            p.setRealmTags2(new RealmList<Tag>(p.getTags().toArray(new Tag[0])));
+//                realm1.beginTransaction();
+                currentProcess.setRealmTags(new RealmList<Tag>(currentProcess.getTags().toArray(new Tag[0])));
+                for(Profile profile : untaggedProfiles){
+                    profile.setRealmContents(new RealmList<Content>(profile.getContents().toArray(new Content[0])));
+                    profile.setRealmTags2(new RealmList<Tag>(Tag.cloneList(profile.getTags()).toArray(new Tag[0])));
                 }
+                currentProcess.setRealmProfiles(new RealmList<Profile>(untaggedProfiles.toArray(new Profile[0])));
+//                realm1.commitTransaction();
+                realm1.insertOrUpdate(currentProcess);
             });
         }
     }

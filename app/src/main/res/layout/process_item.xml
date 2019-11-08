@@ -9,51 +9,54 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+
     <LinearLayout
         android:background="?attr/selectableItemBackground"
         android:layout_width="match_parent"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_weight="60"
-            android:maxLines="1"
-            android:text="Title"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <com.ms.square.android.expandabletextview.ExpandableTextView
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:expandableTextView="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/detail"
+        <LinearLayout
+            android:layout_weight="4"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            expandableTextView:animDuration="20"
-            expandableTextView:maxCollapsedLines="3">
+            android:layout_height="match_parent">
 
             <TextView
-                android:id="@id/expandable_text"
+                android:textAlignment="viewStart"
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="Title"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/expert_user"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="16sp" />
 
-            <ImageButton
-                android:id="@id/expand_collapse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="left|bottom"
-                android:padding="16dp" />
-        </com.ms.square.android.expandabletextview.ExpandableTextView>
+            <TextView
+                android:id="@+id/report"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
 
+        </LinearLayout>
+
+
+        <ImageButton
+            android:layout_weight="1"
+            android:id="@+id/btn_sync"
+            android:background="@android:color/transparent"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_sync"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
 
     </LinearLayout>
-
-
 
 </androidx.cardview.widget.CardView>
 

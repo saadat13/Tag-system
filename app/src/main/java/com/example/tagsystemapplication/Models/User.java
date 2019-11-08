@@ -13,9 +13,6 @@ public class User extends RealmObject {
     @SerializedName("username")
     private String username;
 
-    @LinkingObjects("realmUsers")
-    private final RealmResults<Tag> fromUsers = null;
-
 
     public User(){}
 

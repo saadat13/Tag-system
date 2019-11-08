@@ -1,14 +1,10 @@
 package com.example.tagsystemapplication.Models;
 
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-import java.io.Serializable;
 
 public class OutputTag {
 
-    @SerializedName("tag_title")
-    @Expose
+    @SerializedName("title")
     private String tagTitle;
 
     public OutputTag(){}

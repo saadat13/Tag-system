@@ -2,15 +2,14 @@ package com.example.tagsystemapplication.Models;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.realm.Realm;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
-import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 
 public class Process extends RealmObject {
@@ -18,39 +17,67 @@ public class Process extends RealmObject {
     @SerializedName("id")
     @PrimaryKey
     private int id;
+
     @SerializedName("title")
     private String title;
+
+    @SerializedName("tag_method")
+    private String tagMethod;
+
     @SerializedName("number_of_profiles")
     private int numberOfProfiles;
-    @SerializedName("tagging_method")
-    private String tagMethod;
-    @SerializedName("details")
-    private String otherDetails;
 
-    private RealmList<ProfilePackage> realmProfilePackages = null;
+    @SerializedName("expert_user")
+    private String expertUser;
 
     @Ignore
-    private List<ProfilePackage> profilePackages;
+    @SerializedName("tags")
+    private List<Tag> tags;
 
 
-    // including handling on database mode and server mode
-    public List<ProfilePackage> getProfilePackages() {
-        return (realmProfilePackages != null)? new ArrayList<>(realmProfilePackages): profilePackages;
-    }
+    private RealmList<Tag> realmTags1;
+    private RealmList<Profile> realmProfiles;
 
-    public void setProfilePackages(List<ProfilePackage> profilePackages) {
-        this.profilePackages = profilePackages;
-    }
 
     public Process() {}
 
-
-    public RealmList<ProfilePackage> getRealmProfilePackages() {
-        return realmProfilePackages;
+    public RealmList<Profile> getRealmProfiles() {
+        return realmProfiles;
     }
 
-    public void setRealmProfilePackages(RealmList<ProfilePackage> profiles) {
-        this.realmProfilePackages = profiles;
+    public void setRealmProfiles(RealmList<Profile> realmProfiles) {
+        this.realmProfiles = realmProfiles;
+    }
+
+    public String getExpertUser() {
+        return expertUser;
+    }
+
+    public void setExpertUser(String expertUser) {
+        this.expertUser = expertUser;
+    }
+
+    public List<Tag> getTags() {
+//        if(tags == null){
+//            setTags(getRealmTags());
+//        }
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+//        Realm realm = Realm.getDefaultInstance();
+//        realm.beginTransaction();
+//        setRealmTags(new RealmList<>(tags.toArray(new Tag[0])));
+//        realm.commitTransaction();
+    }
+
+    public RealmList<Tag> getRealmTags() {
+        return realmTags1;
+    }
+
+    public void setRealmTags(RealmList<Tag> realmTags) {
+        this.realmTags1 = realmTags;
     }
 
     public int getId() {
@@ -85,12 +112,19 @@ public class Process extends RealmObject {
         this.title = title;
     }
 
-    public String getOtherDetails() {
-        return otherDetails;
+
+    @Override
+    public int hashCode() {
+        return this.id;
     }
 
-    public void setOtherDetails(String otherDetails) {
-        this.otherDetails = otherDetails;
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if(this == obj) return true;
+        if(!(obj instanceof Process)) return false;
+        Process other = (Process)obj;
+        return this.id == other.id;
     }
 
     @NonNull
@@ -99,15 +133,4 @@ public class Process extends RealmObject {
         return String.format("process %d, title: %s", id, title);
     }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if(this == obj) return true;
-        if(!(obj instanceof Process)) return false;
-        Process other = (Process)obj;
-        return other.id == this.id &&
-                other.numberOfProfiles == this.numberOfProfiles &&
-                other.otherDetails.equals(this.otherDetails) &&
-                other.tagMethod.equals(this.tagMethod) &&
-                other.title.equals(this.title);
-    }
 }

@@ -1,24 +1,27 @@
 package com.example.tagsystemapplication;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.media.Image;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.tagsystemapplication.Adapters.ProcessRecyclerAdapter2;
+import com.example.tagsystemapplication.Adapters.ProcessRecyclerAdapter;
 import com.example.tagsystemapplication.Models.DB;
 import com.example.tagsystemapplication.Models.Process;
-import com.example.tagsystemapplication.Repositories.ProcessRepository;
+import com.example.tagsystemapplication.Models.Profile;
 import com.example.tagsystemapplication.WebService.API_Client;
 import com.example.tagsystemapplication.WebService.API_Interface;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -38,20 +41,20 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.tagsystemapplication.DataHolder.USER_RESPONSE;
 import static com.example.tagsystemapplication.DataHolder.isConnectedToInternet;
 import static com.example.tagsystemapplication.DataHolder.processes;
+import static com.example.tagsystemapplication.DataHolder.taggedProfiles;
+import static com.example.tagsystemapplication.DataHolder.untaggedProfiles;
 
 public class ProcessActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    ProcessRecyclerAdapter2 adapter;
-    RecyclerView rv;
-    SwipeRefreshLayout swipeRefreshLayout;
-    TextView tv_load_error;
+    private ProcessRecyclerAdapter adapter;
+    private RecyclerView rv;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private TextView tv_load_error;
     private DrawerLayout mDrawerLayout;
-    NavigationView nav;
-    ActionBarDrawerToggle toggle;
-
+    private NavigationView nav;
+    private ActionBarDrawerToggle toggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,11 +78,11 @@ public class ProcessActivity extends AppCompatActivity implements NavigationView
             @Override
             public void onRefresh() {
                 tv_load_error.setVisibility(View.GONE);
-                loadProcesses();
+                triggerLoadingProcess();
             }
         });
-    }
 
+    }
 
 
     @Override
@@ -103,8 +106,6 @@ public class ProcessActivity extends AppCompatActivity implements NavigationView
         return super.onOptionsItemSelected(item);
     }
 
-
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -115,77 +116,98 @@ public class ProcessActivity extends AppCompatActivity implements NavigationView
         // use a linear layout manager
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         rv.setLayoutManager(layoutManager);
-        adapter = new ProcessRecyclerAdapter2(this, processes);
+        adapter = new ProcessRecyclerAdapter(this);
         rv.setAdapter(adapter);
     }
 
-    public void loadProcesses() {
-        if (isConnectedToInternet(this)) {
-            //get data from server
-            Toast.makeText(this, "loading from server...", Toast.LENGTH_SHORT).show();
-            API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
-            Call<List<Process>> call = apiInterface.getProcesses();
-            call.enqueue(new Callback<List<Process>>() {
-                @Override
-                public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
-                    if (response.code() == 200) {
-                        processes = response.body();
-                        Log.wtf("Tag:::", processes.size() + " ");
-                        updateUI();
-                        //update database ...
-                        ProcessRepository rep = new ProcessRepository(); // insert processes into database
-                        rep.deleteAll(); // delete old records
-                        rep.insertList(processes);
-                        rep.close();
-                    }else if(response.code() == 401){
-                        String refreshToken = getPreferences(MODE_PRIVATE).getString("refresh", "");
-                        if(!refreshToken.isEmpty()) {
-                            DataHolder.reinitHeaders(ProcessActivity.this, refreshToken);
-                            Toast.makeText(ProcessActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
-                        }else{
-                            startActivity(new Intent(ProcessActivity.this, SignInActivity.class));
-                            ProcessActivity.this.finish();
-                        }
-                    } else {
-                        Log.e("Response:", "Response is not successful!");
-                        onProcessLoadError();
-                    }
-                }
+//    public void loadProcesses() {
+//        //first step : loading from database
+//        triggerLoadingProcess();
+//        //second step : get data from server and merge with database data
+//
+////        if(processes.size() == 0)
+////            tv_load_error.setVisibility(View.VISIBLE);
+////        triggerLoadingProcess();
+//    }
 
-                @Override
-                public void onFailure(Call<List<Process>> call, Throwable t) {
-                    t.printStackTrace();
-                    onProcessLoadError();
-                }
-            });
-        }else{
-            Realm realm = Realm.getDefaultInstance();
-            //async finding implemented because number of records may be enormous and loading may take some time
-            RealmResults<Process> processesFromDB;
-            OrderedRealmCollectionChangeListener<RealmResults<Process>> callback = (results, changeSet) -> {
-                if (changeSet == null) {
-                    // The first time async returns with an null changeSet.
-                } else {
-                    // Called on every update.
-                    // load processes from database
-                    if (!results.isEmpty()) {
-                        Toast.makeText(this, "loading from db...", Toast.LENGTH_SHORT).show();
-                        processes = realm.copyFromRealm(results);
-                        //realm.close();
-                    }
+    private void triggerLoadingProcess() {
+        Realm realm = Realm.getDefaultInstance();
+        //async finding implemented because number of records may be enormous and loading may take some time
+        RealmResults<Process> processesFromDB;
+        OrderedRealmCollectionChangeListener<RealmResults<Process>> callback = (results, changeSet) -> {
+            if (changeSet == null) {
+                // The first time async returns with an null changeSet.
+            } else {
+                // Called on every update.
+                // load processes from database
+                if (!results.isEmpty()) {
+                    Toast.makeText(this, "loading from db...", Toast.LENGTH_SHORT).show();
+                    processes = realm.copyFromRealm(results);
                     updateUI();
                 }
+                if(isConnectedToInternet(this))
+                    getProcessFromServer();
+            }
 //                //realm.close();
-            };
-            // async finding implemented because number of records may be enormous and loading may take some time
-            processesFromDB = realm.where(Process.class).findAllAsync();
-            processesFromDB.addChangeListener(callback);
-        }
+        };
+        // async finding implemented because number of records may be enormous and loading may take some time
+        processesFromDB = realm.where(Process.class).findAllAsync();
+        processesFromDB.addChangeListener(callback);
+    }
+
+    private void getProcessFromServer() {
+        Toast.makeText(this, "loading from server...", Toast.LENGTH_SHORT).show();
+        API_Interface apiInterface = API_Client.getAuthorizedClient(this).create(API_Interface.class);
+        Call<List<Process>> call = apiInterface.getProcesses();
+        call.enqueue(new Callback<List<Process>>() {
+            @Override
+            public void onResponse(Call<List<Process>> call, Response<List<Process>> response) {
+                if (response.code() == 200 && response.body() != null) {
+                    List<Process> pFromServer = response.body();
+                        for (Process p : pFromServer) {
+                            if(!processes.contains(p))
+                                processes.add(p);
+
+                        }
+//                        tv_load_error.setVisibility(View.GONE);
+                        swipeRefreshLayout.setRefreshing(false);
+                        adapter.notifyDataSetChanged();
+                        rv.setVisibility(View.VISIBLE);
+                        rv.invalidate();
+
+                }else if(response.code() == 401){
+                    String refreshToken = getSharedPreferences("info", MODE_PRIVATE).getString("refresh", "");
+                    if(!refreshToken.isEmpty()) {
+                        DataHolder.reinitHeaders(ProcessActivity.this, refreshToken);
+                        Toast.makeText(ProcessActivity.this, "reinitializing headers", Toast.LENGTH_SHORT).show();
+                        getProcessFromServer();
+                    }else{
+                        startActivity(new Intent(ProcessActivity.this, SignInActivity.class));
+                        ProcessActivity.this.finish();
+                    }
+                } else if(response.code() == 404 ){
+                    Toast.makeText(ProcessActivity.this, "there is no process available", Toast.LENGTH_SHORT).show();
+                }else{
+                    Log.e("Response:", "");
+                    Log.e("PROCESS:::", "Response is not successful! response code: " + response.code());
+                    onProcessLoadError();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Process>> call, Throwable t) {
+                t.printStackTrace();
+                Log.e("PROCESS:::", "on failure process load!!!");
+                onProcessLoadError();
+            }
+        });
+
     }
 
     private void onProcessLoadError() {
-        tv_load_error.setVisibility(View.VISIBLE);
-        rv.setVisibility(View.GONE);
+//        tv_load_error.setVisibility(View.VISIBLE);
+//        rv.setVisibility(View.GONE);
+        Toast.makeText(this, "Loading from server failed", Toast.LENGTH_SHORT).show();
         swipeRefreshLayout.setRefreshing(false);
     }
 
@@ -193,7 +215,7 @@ public class ProcessActivity extends AppCompatActivity implements NavigationView
     protected void onResume() {
         super.onResume();
         swipeRefreshLayout.setRefreshing(true);
-        loadProcesses();
+        triggerLoadingProcess();
     }
 
     public void updateUI() {

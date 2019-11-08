@@ -41,14 +41,14 @@
 
     </FrameLayout>
 
-    <ExpandableListView
-        android:layout_gravity="center|bottom"
-        android:id="@+id/tag_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="150dp"
-        android:layout_marginTop="16dp"
-        />
+    <!--<ExpandableListView-->
+        <!--android:layout_gravity="center|bottom"-->
+        <!--android:id="@+id/tag_list"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:minHeight="150dp"-->
+        <!--android:layout_marginTop="16dp"-->
+        <!--/>-->
 
 
 </LinearLayout>

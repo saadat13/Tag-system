@@ -1,10 +1,10 @@
 package com.example.tagsystemapplication.WebService;
 
-import com.example.tagsystemapplication.Models.AccessToken;
 import com.example.tagsystemapplication.Models.Output;
 import com.example.tagsystemapplication.Models.Process;
-import com.example.tagsystemapplication.Models.ProfilePackage;
 import com.example.tagsystemapplication.Models.LoginResponse;
+import com.example.tagsystemapplication.Models.Profile;
+import com.google.gson.JsonObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,28 +23,20 @@ public interface API_Interface {
     @POST("accounts/token/")
     Call<LoginResponse> getToken(@Body HashMap<String, String> userpass);
 
-
+    @Headers("Content-Type: application/json")
     @POST("accounts/token/refresh/")
-    Call<LoginResponse> refreshToken(@Header("refresh: ") String refreshToken);
+    Call<LoginResponse> refreshToken(@Body HashMap<String, String> refreshToken);
 
 
     @GET("api/processes/")
     Call<List<Process>> getProcesses();
 
-    // TODO : in this step server sends a list of package profiles which are available and not tagged
-    @GET("api/processes/{pid}/package_profiles/")
-    Call<ProfilePackage> getPackageProfile(@Path("pid") int pid);
+    @GET("api/processes/{pk}/profiles/")
+    Call<List<Profile>> getProfiles(@Path("pk") int pk);
 
-
+    @Headers("Content-Type: application/json")
     @POST("api/outputs/")
-    Call<Output> sendOutput(@Body Output output);
+    Call<JsonObject> sendOutput(@Body String output);
 
-
-//    @GET("api/processes/{pid}/package_profiles/{id}/profiles/{i}/block/")
-//    Call<String> blockProfile(@Path("pid") int pid,@Path("id") int id,@Path("i") int i);
-//
-//
-//    @POST("api/processes/{pid}/package_profiles/{id}/profiles/{i}/unblock/")
-//    Call<String> unblockProfile(@Path("pid") int pid,@Path("id") int id,@Path("i") int i);
 
 }

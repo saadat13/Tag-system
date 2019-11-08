@@ -6,82 +6,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import io.realm.RealmList;
+import androidx.annotation.Nullable;
 import io.realm.RealmObject;
 import io.realm.RealmResults;
-import io.realm.annotations.Ignore;
 import io.realm.annotations.LinkingObjects;
 import io.realm.annotations.PrimaryKey;
 
-public class Tag extends RealmObject {
+public class Tag extends RealmObject implements Cloneable {
 
-    @SerializedName("id")
-    @PrimaryKey
-    private int id;
+//    @SerializedName("id")
+////    @PrimaryKey
+//    private int id;
+
+
     @SerializedName("title")
     private String title;
-    @SerializedName("is_valid")
+
+    @SerializedName("is_checked")
     private boolean isChecked;
-    @SerializedName("percent")
-    private int percent;
 
 
-    @LinkingObjects("realmTags")
-    private final RealmResults<Profile> fromRealmTags = null;
+    @LinkingObjects("realmTags1")
+    private final RealmResults<Process> fromRealmTags1 = null;
 
 
-    @Ignore
-    @SerializedName("users")
-    private List<User> users;
+    @LinkingObjects("realmTags2")
+    private final RealmResults<Profile> fromRealmTags2 = null;
 
-    private RealmList<User> realmUsers;
-
-    int counter;
-
-    public int getCounter() {
-        return counter;
-    }
-
-    public void setCounter(int counter) {
-        this.counter = counter;
-    }
 
     public Tag(){}
 
-
-    public int getPercent() {
-        return percent;
+    public Tag(boolean isChecked , String title){
+//        this.id = id;
+        this.title = title;
+        this.isChecked = isChecked;
     }
 
-    public void setPercent(int percent) {
-        this.percent = percent;
+    public static List<Tag> cloneList(List<Tag> list) {
+        List<Tag> clone = new ArrayList<Tag>(list.size());
+        for (Tag item : list) {
+            clone.add(new Tag(item.isChecked, item.getTitle()));
+        }
+        return clone;
     }
 
-    public List<User> getUsers() {
-        return (realmUsers !=null)? new ArrayList<>(realmUsers) : users;
-    }
 
-
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
-
-    public RealmList<User> getRealmUsers() {
-        return realmUsers;
-    }
-
-    public void setRealmUsers(RealmList<User> realmUsers) {
-        this.realmUsers = realmUsers;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+//    public int getId() {
+//        return id;
+//    }
+//
+//    public void setId(int id) {
+//        this.id = id;
+//    }
 
     public boolean isChecked() {
         return isChecked;
@@ -89,6 +65,14 @@ public class Tag extends RealmObject {
 
     public void setChecked(boolean checked) {
         isChecked = checked;
+    }
+
+    public RealmResults<Process> getFromRealmTags1() {
+        return fromRealmTags1;
+    }
+
+    public RealmResults<Profile> getFromRealmTags2() {
+        return fromRealmTags2;
     }
 
     public String getTitle() {
@@ -102,6 +86,19 @@ public class Tag extends RealmObject {
     @NonNull
     @Override
     public String toString() {
-        return String.format("tag %d, title: %s", id, title);
+        return String.format("title: %s", title);
+    }
+
+//    @Override
+//    public int hashCode() {
+//        return this.id;
+//    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if(obj == this) return true;
+        if(!(obj instanceof Tag)) return false;
+        Tag other = (Tag)obj;
+        return other.title.equals(this.title);
     }
 }

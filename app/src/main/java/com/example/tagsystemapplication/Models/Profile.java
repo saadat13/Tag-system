@@ -21,7 +21,6 @@ import io.realm.annotations.PrimaryKey;
 
 public class Profile extends RealmObject{
 
-
     @SerializedName("id")
     @PrimaryKey
     private int id;
@@ -34,36 +33,55 @@ public class Profile extends RealmObject{
     private List<Content> contents;
 
     @Ignore
-    @SerializedName("tag")
+    @SerializedName("tags")
     private List<Tag> tags;
 
-    @LinkingObjects("realmProfiles")
-    private final RealmResults<ProfilePackage> fromProfiles = null;
+
+    private boolean isTagged;
 
 
-    // these two fields is for database not for retrofit
+    // this field is for database not for retrofit
 
     private RealmList<Content> realmContents;
-    private RealmList<Tag> realmTags;
+    private RealmList<Tag> realmTags2;
+
+
+    @LinkingObjects("realmProfiles")
+    private final RealmResults<Process> fromRealmProfiles=  null;
+
+    public boolean isTagged() {
+        return isTagged;
+    }
 
     public Profile(){}
 
 
-
-    public List<Content> getContents() {
-        return (realmContents != null)? new ArrayList<>(realmContents): contents;
-    }
-
-    public void setContents(List<Content> contents) {
-        this.contents = contents;
+    public void setTagged(boolean tagged) {
+        isTagged = tagged;
     }
 
     public List<Tag> getTags() {
-        return (realmTags != null)? new ArrayList<>(realmTags): tags;
+        if(tags == null){
+            setTags(getRealmTags2());
+        }
+        return tags;
     }
 
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+//        Realm realm = Realm.getDefaultInstance();
+//        realm.beginTransaction();
+//        setRealmTags2(new RealmList<>(tags.toArray(new Tag[0])));
+//        realm.commitTransaction();
+    }
+
+
+    public List<Content> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<Content> contents) {
+        this.contents = contents;
     }
 
     public RealmList<Content> getRealmContents() {
@@ -74,23 +92,18 @@ public class Profile extends RealmObject{
         this.realmContents = realmContents;
     }
 
-    public RealmList<Tag> getRealmTags() {
-        return realmTags;
+    public RealmList<Tag> getRealmTags2() {
+        return realmTags2;
     }
 
-    public void setRealmTags(RealmList<Tag> realmTags) {
-        this.realmTags = realmTags;
+    public void setRealmTags2(RealmList<Tag> realmTags2) {
+        this.realmTags2 = realmTags2;
     }
 
-
-    public void setContents(RealmList<Content> contents) {
-        this.contents = contents;
+    public RealmResults<Process> getFromRealmProfiles() {
+        return fromRealmProfiles;
     }
 
-
-    public void setTags(RealmList<Tag> tags) {
-        this.tags = tags;
-    }
 
     public int getId() {
         return id;
